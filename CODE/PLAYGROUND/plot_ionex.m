@@ -1,4 +1,4 @@
-ionex = read_ionex_TUW('..\DATA\IONO\2022\214\igsg2140.22i');
+ionex = read_ionex_TUW('../DATA/IONO/2022/214/igsg2140.22i');
 
 
 no_maps = size(ionex.map,3);

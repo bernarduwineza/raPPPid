@@ -183,7 +183,7 @@ end
 fprintf(fileID,'  %s%s\n','zwd: ',settings.TROPO.zwd);
 if strcmpi(settings.TROPO.zwd,'e (in situ) + Askne')
     fprintf(fileID,'    %s%5.2f%s\n','q: ',settings.TROPO.q,' %');
-    fprintf(fileID,'    %s%6.2f%s\n','T: ',settings.TROPO.T,' °C');
+    fprintf(fileID,'    %s%6.2f%s\n','T: ',settings.TROPO.T,' ï¿½C');
 end
 fprintf(fileID,'  %s%s\n','mfh: ',settings.TROPO.mfh);
 fprintf(fileID,'  %s%s\n','mfw: ',settings.TROPO.mfw);
@@ -374,7 +374,7 @@ fprintf(fileID,'%s\n','Ambiguity Fixing: ');
 if settings.AMBFIX.bool_AMBFIX
     fprintf(fileID,'  %s%.0f%s%.0f%s\n','Fixing-Start [seconds]: WL = ',settings.AMBFIX.start_WL_sec,', NL = ',settings.AMBFIX.start_NL_sec);
     fprintf(fileID,'  %s%.2f%s%.2f%s%.0f%s\n','HMW fixing: threshold = ', settings.AMBFIX.HMW_thresh, ' [cy], releasing threshold = ', settings.AMBFIX.HMW_release, ' [cy], window = ', settings.AMBFIX.HMW_window, ' [s]');
-    fprintf(fileID,'  %s%d\n','Fixing cutoff [°]: ', settings.AMBFIX.cutoff);
+    fprintf(fileID,'  %s%d\n','Fixing cutoff [ï¿½]: ', settings.AMBFIX.cutoff);
     fprintf(fileID,'  %s%s\n','Choice of Reference Satellite: ', settings.AMBFIX.refSatChoice);
     if strcmp(settings.AMBFIX.refSatChoice, 'manual choice (list):')
         fprintf(fileID,'    %s%d\n','Manual reference satellite list for GPS: ', settings.AMBFIX.refSatGPS);
@@ -499,7 +499,7 @@ if ~bool
 end
 
 fprintf(fileID,'  Satellite Exclusion Criteria:\n');
-fprintf(fileID,'    %s%d%s\n', 'Elevation Cutoff: ',settings.PROC.elev_mask,' [°]');
+fprintf(fileID,'    %s%d%s\n', 'Elevation Cutoff: ',settings.PROC.elev_mask,' [ï¿½]');
 fprintf(fileID,'    %s%d%s\n', 'SNR Cutoff: ',settings.PROC.SNR_mask,' [db-Hz]');
 fprintf(fileID,'    %s%d\n', 'Signal Strength Threshold: ',settings.PROC.ss_thresh);
 if settings.PROC.check_omc

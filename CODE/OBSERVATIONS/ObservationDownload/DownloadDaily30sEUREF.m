@@ -39,7 +39,7 @@ end
 % check if stations list from file
 if isempty(stations)
     % open and read txt file
-    fid = fopen('..\CODE\OBSERVATIONS\ObservationDownload\EUREF_r3_stations.txt');         
+    fid = fopen('../CODE/OBSERVATIONS/ObservationDownload/EUREF_r3_stations.txt');         
     stations = textscan(fid,'%s', 'delimiter','\n', 'whitespace','');
     stations = stations{1};
     fclose(fid);

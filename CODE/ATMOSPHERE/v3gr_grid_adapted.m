@@ -204,7 +204,7 @@ if load_new == 1
                 mkdir([indir_V3GR_grid '/' num2str(year(1))]);
                 urlwrite([url_V3GR_grid '/' num2str(year(1)) '/' filename(1,:)], [indir_V3GR_grid '/' num2str(year(1)) '/' filename(1,:)]);
             end
-            dat = fopen([indir_V3GR_grid '\' num2str(year(1)) '\' filename(1,:)]);
+            dat = fopen([indir_V3GR_grid '/' num2str(year(1)) '/' filename(1,:)]);
             
         else
             

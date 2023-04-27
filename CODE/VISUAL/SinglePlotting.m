@@ -23,6 +23,8 @@ function [] = SinglePlotting(satellites, storeData, obs, settings)
 
 %% Preparations
 
+set(0,'DefaultFigureWindowStyle','docked')
+
 fprintf('\n');      % Print empty line
 global STOP_CALC
 STOP_CALC = 0;

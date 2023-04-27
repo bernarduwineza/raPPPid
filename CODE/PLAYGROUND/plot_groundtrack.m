@@ -2,7 +2,7 @@
 
 %% Define input
 % precise orbit file with xyz coordinates of satellite
-sp3 = '..\DATA\ORBIT\2021\145\COM21592.EPH';
+sp3 = '../DATA/ORBIT/2021/145/COM21592.EPH';
 % satellite to plot, color and plot style
 % sats = {'G01'};
 sats = {'G01', 'E01', 'E11', 'R02', 'C06', 'C11'};
@@ -26,8 +26,8 @@ figure
 world = worldmap('world');
 cont = geoshow('landareas.shp', 'FaceColor', [0.6 0.8 0]);  % plot continents in color
 setm(gca,'ffacecolor', [0.4 0.8 1])                 	% set ocean color
-set(findall(world,'Tag','PLabel'),'visible','off')      % remove latitude  captions (eg. 90°N)
-set(findall(world,'Tag','MLabel'),'visible','off')      % remove longitude captions (eg. 45°W)
+set(findall(world,'Tag','PLabel'),'visible','off')      % remove latitude  captions (eg. 90ï¿½N)
+set(findall(world,'Tag','MLabel'),'visible','off')      % remove longitude captions (eg. 45ï¿½W)
 title('GNSS Ground Track')
 hold on
 
@@ -53,7 +53,7 @@ for j = 1:m
         [lat(i), lon(i), ~] = xyz2ell_GT(X, Y, Z);
     end
     
-    % convert to [°]
+    % convert to [ï¿½]
     lat = lat/pi*180;
     lon = lon/pi*180;
     % plot satellite ground track

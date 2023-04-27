@@ -27,8 +27,11 @@ path_7zip = ['"' path_7zip '"'];
 % building string for command line
 str = [path_7zip,  ' x -o', dir_file, ' ', path_file];
 
+% building string for Mac/UNIX
+str_unix = ['gzip -dkvf ', path_file];
+
 % writing command to command line to unzip
-[status, cmdout] = system(str);      % status = 0 = OK
+[status, cmdout] = system(str_unix);      % status = 0 = OK
 
 if status ~= 0          % check if unzipping worked
     fprintf(2, 'Unzipping failed: %s                 \n', path_file);

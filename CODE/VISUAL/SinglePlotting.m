@@ -336,7 +336,7 @@ if STOP_CALC; return; end
 
 %     -+-+-+-+- Figures: Multipath Detection  -+-+-+-+-
 if settings.PLOT.mp
-    if (isfield(settings.OTHER, 'mp_detection') || settings.OTHER.mp_detection)
+    if (settings.OTHER.mp_detection)
         C1_diff = zero2nan(storeData.mp_C1_diff_n);
         PlotObsDiff(epochs, C1_diff, label_x_epc, rgb, 'C1 difference', settings, satellites.obs, settings.OTHER.mp_thresh, settings.OTHER.mp_degree, '', false);
     else

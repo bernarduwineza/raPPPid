@@ -175,7 +175,7 @@ prns = prns(sum(gnss_obs,1) > 0);
 if isempty(prns); return; end
 % Plot
 iono_corr(iono_corr==0) = NaN;
-plot(hours, iono_corr(:,prns));
+plot(hours, iono_corr(:,prns), 'Marker','.');
 % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
 % create legend which datatooltip needs
 sys = gnss2char(gnss);
@@ -200,7 +200,7 @@ prns = prns(sum(gnss_obs,1) > 0);
 if isempty(prns); return; end
 % Plot
 iono_est(iono_est==0) = NaN;
-plot(hours, iono_est(:,prns));
+plot(hours, iono_est(:,prns), 'Marker','.');
 % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
 % create legend which datatooltip needs
 sys = gnss2char(gnss);
@@ -225,7 +225,7 @@ prns = 1:size(gnss_obs,2);
 prns = prns(sum(gnss_obs,1) > 0);
 if isempty(prns); return; end
 % Plot
-plot(hours, iono_diff(:,prns));
+plot(hours, iono_diff(:,prns), 'Marker','.');
 % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
 % create legend which datatooltip needs
 sys = gnss2char(gnss);

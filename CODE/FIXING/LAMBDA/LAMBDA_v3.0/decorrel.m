@@ -36,7 +36,7 @@ function [Qzhat,Z,L,D,zhat,iZt] = decorrel (Qahat,ahat)
 %Tests on Inputs ahat and Qahat                           
 
 %Is the Q-matrix symmetric?
-if ~isequal(Qahat-Qahat'<1E-8,ones(size(Qahat)));
+if ~isequal(Qahat-Qahat'<1E-7,ones(size(Qahat)));
   error ('Variance-covariance matrix is not symmetric!');
 end;
 

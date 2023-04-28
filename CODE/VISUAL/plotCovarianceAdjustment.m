@@ -62,7 +62,8 @@ set(gcf, 'Colormap', mycap);
 
 % Calculate Correlation Coefficient
 % each element is divided by the product of the stdevs of the main diagonal
-CORR = ( covar ./ ( sqrt(diag(covar))' .* sqrt(diag(covar)) ) );
+max_diag = sqrt(max(diag(covar), 0)); % some elements are negative due to numerical instability.
+CORR = ( covar ./ ( max_diag' .* max_diag ) );
 
 % Create tick labels
 ticks = cell(1, NO_PARAM + s_f + bool_iono*noSats);
@@ -135,7 +136,7 @@ NO_PARAM = NO_PARAM - numel(idx_remove);
 % Plot figure with Correlations between all parameters
 imagesc(CORR)
 colorbar
-caxis([-1 1])
+clim([-1 1])
 hold on
 
 % move view

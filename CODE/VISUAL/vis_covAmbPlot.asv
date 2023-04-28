@@ -27,7 +27,7 @@ idx = 1:399;
 obs_bool = logical(full(observ));
 obs_prns = idx(sum(obs_bool(:,idx),1) > 0);       % prns of observed satellites
 y_max = max(STD(:)); 
-y_max(isnan(y_max)) = 1;
+y_max(y_max==NaN) = 0; 
 x_limits = [min(hours) max(hours)];
 
 % plot colors

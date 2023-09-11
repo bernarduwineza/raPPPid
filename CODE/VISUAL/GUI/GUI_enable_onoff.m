@@ -282,16 +282,57 @@ if strcmpi(handles.uipanel_ionosphere.Visible, 'on')
             set(handles.edit_constraint_until,'Visible','Off');
             set(handles.text_constraint_decrease,'Visible','Off');
             set(handles.edit_constraint_decrease,'Visible','Off');
+            set(handles.buttongroup_bspline,'Visible','Off');
+            set(handles.edit_lat_res_level,'Visible','Off'); 
+            set(handles.edit_lat_degree,'Visible','Off'); 
+            set(handles.text_lat_num_basis,'Visible','Off');
+            set(handles.edit_lon_res_level,'Visible','Off'); 
+            set(handles.edit_lon_degree,'Visible','Off'); 
+            set(handles.text_lon_num_basis,'Visible','Off'); 
+            set(handles.edit_lat_max,'Visible','On'); 
+            set(handles.edit_lat_min,'Visible','Off');  
+            set(handles.text_lat_range,'Visible','Off');
+            set(handles.edit_lon_max,'Visible','Off'); 
+            set(handles.edit_lon_min,'Visible','Off'); 
+            set(handles.text_lon_range,'Visible','Off'); 
             set(handles.buttongroup_models_ionosphere_ionex,'Visible','Off');
             set(handles.buttongroup_models_ionosphere_autodetect,'Visible','Off');
             set(handles.buttongroup_models_ionosphere_ionex_type,'Visible','Off');
             
-        case {'Estimate with ... as constraint', 'Correct with ...'}
+        case {'Estimate with ... as constraint', 'Correct with ...', 'Estimate VTEC'}
             set(handles.buttongroup_source_ionosphere,'Visible','On');
             set(handles.text_constraint_until,'Visible','On');
             set(handles.edit_constraint_until,'Visible','On');
             set(handles.text_constraint_decrease,'Visible','On');
             set(handles.edit_constraint_decrease,'Visible','On');
+            set(handles.buttongroup_bspline,'Visible','Off');
+            set(handles.edit_lat_res_level,'Visible','Off'); 
+            set(handles.edit_lat_degree,'Visible','Off');  
+            set(handles.text_lat_num_basis,'Visible','Off');
+            set(handles.edit_lon_res_level,'Visible','Off'); 
+            set(handles.edit_lon_degree,'Visible','Off'); 
+            set(handles.text_lon_num_basis,'Visible','Off'); 
+            if strcmp(handles.buttongroup_models_ionosphere.SelectedObject.String, 'Estimate VTEC')
+                set(handles.text_constraint_until,'Visible','Off');
+                set(handles.edit_constraint_until,'Visible','Off');
+                set(handles.text_constraint_decrease,'Visible','Off');
+                set(handles.edit_constraint_decrease,'Visible','Off');
+
+                set(handles.buttongroup_bspline,'Visible','On');
+                set(handles.edit_lat_res_level,'Visible','On'); 
+                set(handles.edit_lat_degree,'Visible','On');  
+                set(handles.text_lat_num_basis,'Visible','On');
+                set(handles.edit_lon_res_level,'Visible','On'); 
+                set(handles.edit_lon_degree,'Visible','On'); 
+                set(handles.text_lon_num_basis,'Visible','On'); 
+                set(handles.edit_lat_max,'Visible','On'); 
+                set(handles.edit_lat_min,'Visible','On');  
+                set(handles.text_lat_range,'Visible','On');
+                set(handles.edit_lon_max,'Visible','On'); 
+                set(handles.edit_lon_min,'Visible','On'); 
+                set(handles.text_lon_range,'Visible','On'); 
+            end 
+            
             if strcmp(handles.buttongroup_source_ionosphere.SelectedObject.String, 'IONEX File')
                 set(handles.buttongroup_models_ionosphere_ionex,'Visible','On');
                 set(handles.buttongroup_models_ionosphere_ionex_type,'Visible','Off');
@@ -682,6 +723,16 @@ if strcmpi(handles.uipanel_adjustment.Visible, 'on')
         % std iono observations
         set(handles.text_std_iono,                  'Enable', 'On');
         set(handles.edit_Std_Iono,                  'Enable', 'On');
+    elseif strcmp(handles.buttongroup_models_ionosphere.SelectedObject.String, 'Estimate VTEC')
+        % filter settings
+        set(handles.edit_filter_iono_vtec_Q,                'Enable', 'On');
+        set(handles.edit_filter_iono_vtec_sigma0,           'Enable', 'On');
+        set(handles.popupmenu_filter_iono_vtec_dynmodel,    'Enable', 'On');
+        set(handles.text_iono_vtec,                         'Enable', 'On');
+        set(handles.text_iono_vtec_m,                       'Enable', 'On');
+        % std iono observations
+        set(handles.text_std_iono_vtec,                     'Enable', 'On');
+        set(handles.edit_Std_Iono_vtec,                     'Enable', 'On');
     elseif strcmp(handles.buttongroup_models_ionosphere.SelectedObject.String, 'Estimate')
         % filter settings
         set(handles.edit_filter_iono_Q,             'Enable', 'On');

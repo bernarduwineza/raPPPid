@@ -6,7 +6,7 @@ function [Adjust, Epoch, model, obs, HMW_12, HMW_23, HMW_13] = ...
 % calculate satellite SD and eliminate the receiver phase hardware delays.
 % 
 % INPUT:
-%	HMW_12,...  Hatch-Melbourne-Wübbena LC observables
+%	HMW_12,...  Hatch-Melbourne-Wï¿½bbena LC observables
 % 	Adjust      adjustment data and matrices for current epoch [struct]
 %	Epoch       epoch-specific data for current epoch [struct]
 %	settings    settings from GUI [struct]
@@ -18,7 +18,7 @@ function [Adjust, Epoch, model, obs, HMW_12, HMW_23, HMW_13] = ...
 %	Epoch       epoch-specific data for current epoch [struct]
 %  	model       model corrections for all visible satellites [struct]
 %   obs         observation-specific data [struct]
-%	HMW_12,...  Hatch-Melbourne-Wübbena LC observables
+%	HMW_12,...  Hatch-Melbourne-Wï¿½bbena LC observables
 %
 % 
 % This function belongs to raPPPid, Copyright (c) 2023, M.F. Glaner
@@ -38,11 +38,15 @@ switch settings.IONO.model
     case 'Estimate'
         [Epoch, Adjust] = ...
             adjPrep_ZD_iono_est(settings, Adjust, Epoch, Epoch.old.sats, satellites.elev, obs.interval);
+    case 'Estimate VTEC'
+        [Epoch, Adjust] = ...
+            adjPrep_ZD_iono_vtec(settings, Adjust, Epoch, Epoch.old.sats, satellites.elev, obs.interval);
     otherwise
         [Epoch, Adjust] = ...
             adjustmentPreparation_ZD(settings, Adjust, Epoch, Epoch.old.sats, satellites.elev, obs.interval);
 end
 % Estimation of float paramaters
+Adjust.param = Adjust.param_pred;
 [Epoch, Adjust, model] = ...
     calc_float_solution(input, obs, Adjust, Epoch, settings);
 
@@ -73,6 +77,9 @@ if settings.AMBFIX.bool_AMBFIX
                     PPPAR_3IF(HMW_12, HMW_23, HMW_13, Adjust, Epoch, settings, input, satellites, obs, model);
                 
             case 'Estimate with ... as constraint'
+                [Epoch, Adjust] = ...
+                    PPPAR_UC(HMW_12, HMW_23, HMW_13, Adjust, Epoch, settings, input, satellites, obs, model);
+            case 'Estimate VTEC'
                 [Epoch, Adjust] = ...
                     PPPAR_UC(HMW_12, HMW_23, HMW_13, Adjust, Epoch, settings, input, satellites, obs, model);
                 

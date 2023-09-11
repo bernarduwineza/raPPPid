@@ -380,6 +380,8 @@ switch structure.IONO.model
         set(handles.radiobutton_models_ionosphere_3freq,           'Value', 1);
     case 'Estimate with ... as constraint'
         set(handles.radiobutton_models_ionosphere_estimateConstraint,   'Value', 1);
+    case 'Estimate VTEC'
+        set(handles.radiobutton_models_ionosphere_estimateVTEC,   'Value', 1);
     case 'Correct with ...'
         set(handles.radiobutton_models_ionosphere_correct,          'Value', 1);
 	case 'Estimate'
@@ -701,6 +703,11 @@ end
 set(handles.edit_Std_CA_Code, 'String', sprintf('%.3f', sqrt(structure.ADJ.var_code))  );
 set(handles.edit_Std_Phase,   'String', sprintf('%.3f', sqrt(structure.ADJ.var_phase)) );
 set(handles.edit_Std_Iono,    'String', sprintf('%.3f', sqrt(structure.ADJ.var_iono))  );
+try
+    set(handles.edit_Std_Iono_vtec,'String', sprintf('%.3f', sqrt(structure.ADJ.var_iono_vtec)));
+catch
+    set(handles.edit_Std_Iono_vtec,'String', sprintf('%.3f', sqrt(structure.ADJ.var_iono)));
+end 
 % Filter Type
 string_all = get(handles.popupmenu_filter,'String');
 value = find(strcmp(string_all,structure.ADJ.filter.type));
@@ -915,6 +922,8 @@ if bool_settings == 1   % do this only for the settings structure
     %    set(handles.checkbox_plot_GI,               'Value', structure.PLOT.GI            );
     % end
 	set(handles.checkbox_plot_iono,             'Value', structure.PLOT.iono          );
+	% set(handles.checkbox_plot_iono_comp,        'Value', structure.PLOT.iono_comp     );
+
 	set(handles.checkbox_plot_cs,               'Value', structure.PLOT.cs            );
 	try
 	set(handles.checkbox_plot_mp,               'Value', structure.PLOT.mp            );

@@ -29,10 +29,10 @@ no_plots = 1 + (NO_PARAM ~= 4) + estimate_dcbs;
 % plot
 subplot(no_plots,1,1);
 hold on
-h1 = plot(hours, std_param(1,:), 'r-');          % X
-h2 = plot(hours, std_param(2,:), 'b-');          % Y
-h3 = plot(hours, std_param(3,:), 'g-');          % Z
-h4 = plot(hours, std_param(4,:), 'k-');          % wet tropospheric delay
+h1 = plot(hours, std_param(1,:), 'r.');          % X
+h2 = plot(hours, std_param(2,:), 'b.');          % Y
+h3 = plot(hours, std_param(3,:), 'g.');          % Z
+h4 = plot(hours, std_param(4,:), 'k.');          % wet tropospheric delay
 % style
 hleg = legend([h1,h2,h3,h4],{'X', 'Y', 'Z', 'ZWD'}, 'Location', 'NorthEast');
 title(hleg, 'Parameter [m]');
@@ -56,19 +56,19 @@ if NO_PARAM ~= 4
     GAL_rec_clk = std_param(11,:);
     BDS_rec_clk = std_param(14,:);
     if any(~isnan(GPS_rec_clk)) && isGPS
-        plot(hours, GPS_rec_clk, 'r-');
+        plot(hours, GPS_rec_clk, 'r.');
         leg_txt_clk{i} = 'dt_{rec}^{G}'; i=i+1;
     end
     if any(~isnan(GLO_rec_clk)) && isGLO
-        plot(hours, GLO_rec_clk, 'b-');
+        plot(hours, GLO_rec_clk, 'b.');
         leg_txt_clk{i} = 'dt_{rec}^{R}'; i=i+1;
     end
     if any(~isnan(GAL_rec_clk)) && isGAL
-        plot(hours, GAL_rec_clk, 'c-');
+        plot(hours, GAL_rec_clk, 'c.');
         leg_txt_clk{i} = 'dt_{rec}^{E}'; i=i+1;
     end
     if any(~isnan(BDS_rec_clk)) && isBDS
-        plot(hours, BDS_rec_clk, 'm-');
+        plot(hours, BDS_rec_clk, 'm.');
         leg_txt_clk{i} = 'dt_{rec}^{C}';
     end
     % style
@@ -101,34 +101,34 @@ if estimate_dcbs
     m2ns = 1e9 / Const.C;
     % plot
     if any(~isnan(GPS_dcb_1)) && isGPS
-        plot(hours, GPS_dcb_1*m2ns, 'r-');
+        plot(hours, GPS_dcb_1*m2ns, 'r.');
         leg_txt_dcb{j} = 'DCB_{1}^{G}'; j=j+1;
         if any(~isnan(GPS_dcb_2))
-            plot(hours, GPS_dcb_2*m2ns, 'r--');
+            plot(hours, GPS_dcb_2*m2ns, 'r-.');
             leg_txt_dcb{j} = 'DCB_{2}^{G}'; j=j+1;
         end
     end
     if any(~isnan(GLO_dcb_1)) && isGLO
-        plot(hours, GLO_dcb_1*m2ns, 'b-');
+        plot(hours, GLO_dcb_1*m2ns, 'b.');
         leg_txt_dcb{j} = 'DCB_{1}^{R}'; j=j+1;
         if any(~isnan(GLO_dcb_2))
-            plot(hours, GLO_dcb_2*m2ns, 'b--');
+            plot(hours, GLO_dcb_2*m2ns, 'b-.');
             leg_txt_dcb{j} = 'DCB_{2}^{R}'; j=j+1;
         end
     end
     if any(~isnan(GAL_dcb_1)) && isGAL
-        plot(hours, GAL_dcb_1*m2ns, 'c-');
+        plot(hours, GAL_dcb_1*m2ns, 'c.');
         leg_txt_dcb{j} = 'DCB_{1}^{E}'; j=j+1;
         if any(~isnan(GAL_dcb_2))
-            plot(hours, GAL_dcb_2*m2ns, 'c--');
+            plot(hours, GAL_dcb_2*m2ns, 'c-.');
             leg_txt_dcb{j} = 'DCB_{2}^{E}'; j=j+1;
         end
     end
     if any(~isnan(BDS_dcb_1)) && isBDS
-        plot(hours, BDS_dcb_1*m2ns, 'm-');
+        plot(hours, BDS_dcb_1*m2ns, 'm.');
         leg_txt_dcb{j} = 'DCB_{1}^{C}'; j=j+1;
         if any(~isnan(BDS_dcb_2))
-            plot(hours, BDS_dcb_2*m2ns, 'm--');
+            plot(hours, BDS_dcb_2*m2ns, 'm-.');
             leg_txt_dcb{j} = 'DCB_{2}^{C}';
         end
     end

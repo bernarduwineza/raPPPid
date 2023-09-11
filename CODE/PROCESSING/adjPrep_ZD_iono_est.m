@@ -9,7 +9,7 @@ function [Epoch, Adjust] = adjPrep_ZD_iono_est(settings, Adjust, Epoch, prns_old
 %   Adjust          struct, all adjustment relevant data
 %   Epoch           struct, epoch-specific data for current epoch
 %   prns_old        satellites of previous epoch
-%   elevs_old       elevation [°] of all 399 satellites of all epochs
+%   elevs_old       elevation [ï¿½] of all 399 satellites of all epochs
 %   obs_int         interval of observations [s]
 % OUTPUT:
 %   Epoch           updated
@@ -39,13 +39,13 @@ dcb_13_on = settings.BIASES.estimate_rec_dcbs && num_freq >= 3;
 % Get and create some variables
 NO_PARAM = Adjust.NO_PARAM;			% number of estimated parameters
 prns = Epoch.sats;                	% satellites of current epoch
-no_sats_old = length(prns_old);      	% number of satellites in last epoch
+no_sats_old = length(prns_old);     % number of satellites in last epoch
 no_sats = Epoch.no_sats;         	% number of satellites of current epoch
-s_f = no_sats*num_freq;               	% #satellites x #frequencies
+s_f = no_sats*num_freq;             % #satellites x #frequencies
 q = Epoch.q;                        % epoch number
 no_ambiguities = s_f * bool_code_phase;     % number of estimated ambiguities
-N_eye = eye(s_f);                       % square unit matrix, size = number of ambiguities
-N_idx = (NO_PARAM+1):(NO_PARAM+s_f);  	% indices of the ambiguities
+N_eye = eye(s_f);                           % square unit matrix, size = number of ambiguities
+N_idx = (NO_PARAM+1):(NO_PARAM+s_f);  	    % indices of the ambiguities
 % indices of the ionospheric delay
 iono_idx = (1+NO_PARAM+no_ambiguities):(NO_PARAM+no_ambiguities+no_sats); 
 iono_eye = eye(numel(iono_idx));        % square unit matrix, size = number of ionospheric delays
@@ -65,7 +65,7 @@ else
     % -) build parameter-vector    
     param_vec = zeros(NO_PARAM + no_ambiguities + no_sats, 1);  % 16 + no. ambiguities + no. ionospheric delays
     param_vec(1:3,1) = settings.INPUT.pos_approx;       % approximate position (X,Y,Z)
-    % other parameters don´t have approximate values so they are zero
+    % other parameters donï¿½t have approximate values so they are zero
     Adjust.param = param_vec;
     Adjust.param_pred = Adjust.param;
     % -) build covariance matrix of parameters

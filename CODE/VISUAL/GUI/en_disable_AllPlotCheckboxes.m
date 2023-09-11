@@ -43,3 +43,4 @@ set(handles.checkbox_plot_signal_qual,  'Enable', onoff);
 set(handles.checkbox_plot_res_sats,     'Enable', onoff);
 set(handles.checkbox_plot_corr,         'Enable', onoff);
 set(handles.checkbox_plot_iono,         'Enable', onoff);
+% set(handles.checkbox_plot_iono_comp,    'Enable', onoff);

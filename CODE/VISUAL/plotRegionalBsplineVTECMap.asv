@@ -1,0 +1,105 @@
+% Plot the VTEC map using estimated Bspline coefficients
+% (This assumes that a solution from a previous run has bee loaded)
+
+% Define the lat, lon range for the estimated values, i.e. define local
+% region.
+step_sz = 1;
+
+lat_min = settings.IONO.Bspline.lat_min; 
+lat_max = settings.IONO.Bspline.lat_max;
+lon_min = settings.IONO.Bspline.lon_min;
+lon_max = settings.IONO.Bspline.lon_max;
+
+lat_range = lat_min:step_sz:lat_max;
+lon_range = lon_min:step_sz:lon_max;
+
+% number of basis functions
+kj1 = settings.IONO.Bspline.kj1;
+kj2 = settings.IONO.Bspline.kj2;
+
+% Resolution levels
+j1 = settings.IONO.Bspline.lat_res_level;
+j2 = settings.IONO.Bspline.lon_res_level;
+
+% Degree of the B-spline basis functions
+lat_degree = settings.IONO.Bspline.lat_degree;
+lon_degree = settings.IONO.Bspline.lon_degree;
+
+% Form knot points (using Bspline toolbox )
+lat_knots = augknt(linspace(lat_min, lat_max, kj1-lat_degree+1), j1);
+lon_knots = augknt(linspace(lon_min, lon_max, kj2-lon_degree+1), j2);
+
+% Get global VTEC from IONEX file
+path_ionex = settings.IONO.file_ionex;
+ionex = read_ionex_TUW(settings.IONO.file_ionex);
+
+colormap jet;
+fprintf('Epoch 000000');
+for i =1:length(storeData.bspline_coeff)
+    if mod(i,30)==0
+        idx_sats = storeData.lat_pp(i,:) ~= 0;
+
+        lat_pp = storeData.lat_pp(i,idx_sats); 
+        lon_pp = storeData.lon_pp(i,idx_sats); 
+
+        lat_ctrl_pts = lat_min:2:lat_max; 
+        lon_ctrl_pts = lon_min:2:lon_max;
+
+        Ttr = model_save.Ttr(1,3);       	% time of emission [sow (seconds of week)] = time of obs. - runtime
+        
+        % interpolate VTEC
+        vtec_ctrl_pt_gim = zeros(length(lat_ctrl_pts)*length(lon_ctrl_pts),1); 
+        count = 0; 
+        [B,A] = ndgrid(lon_ctrl_pts, lat_ctrl_pts); 
+        ctrl_pts = [B()]
+        for ii = 1:length(lat_ctrl_pts)
+            for jj = 1:length(lon_ctrl_pts)
+                count = count+1;
+                vtec_ctrl_pt_gim(count) = iono_gims(lat_ctrl_pts(ii), lon_ctrl_pts(jj), Ttr, ionex, settings.IONO.interpol); 
+   
+            end 
+        end 
+
+        lat_lon_bases = compute_bspline_bases(settings, lat_pp*pi/180, lon_pp*pi/180);
+        [lat_bases, lon_bases] = compute_lat_lon_bspline_bases(settings, lat_range'*pi/180, lon_range'*pi/180);
+
+        % Estimate Bspline coefficients using LS
+        vtec = storeData.iono_vtec(i, storeData.iono_vtec(i,:)~=0)'; 
+        % coef_iono_LS = lat_lon_bases'\vtec;
+        % coef_iono_LS = reshape(coef_iono_LS, [kj1, kj2]);
+        coef_iono_ls = reshape(lsqr(lat_lon_bases',vtec, 1e-6), [kj1, kj2]);
+        % The estimated Bspline coefficients using the general KF 
+        coef_iono_kf= storeData.bspline_coeff(i,:);
+        coef_iono_kf = reshape(coef_iono_kf', [kj1, kj2]);
+
+        % Compute the VTEC values for every point in the range
+        psi_lat = spcol(lat_knots, j1, lat_range); 
+        psi_lon = spcol(lon_knots, j2, lon_range);
+        % vtec_vals_kf = psi_lat * coef_iono * psi_lon';
+        vtec_vals_kf = lat_bases'*coef_iono_kf*lon_bases; 
+        vtec_vals_ls = lat_bases'*coef_iono_ls*lon_bases;
+
+
+        % Plot VTEC values
+        plt = surf(lat_range,lon_range, vtec_vals_ls.'); 
+        hold on;
+        plot3(lat_pp, lon_pp, vtec, 'r.', 'MarkerSize',12);
+        hold off;
+        clim([0 16]);
+        % zlim([0 100])
+
+        xlabel('Lat (deg)', 'FontSize',14)
+        ylabel('Lon (deg)', 'FontSize',14)
+        cbar = colorbar;
+        cbar.Label.String = 'VTEC (TECu)';
+        cbar.FontSize = 14;
+        view([90 270]);
+        drawnow limitrate;
+        fprintf('\b\b\b\b\b\b%5d\n', i);
+    end
+end
+fprintf('\n');
+drawnow;
+
+% plt.EdgeColor = 'interp';
+% plt.FaceColor = 'interp';

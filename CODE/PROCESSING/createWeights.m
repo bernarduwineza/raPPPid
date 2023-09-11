@@ -43,7 +43,7 @@ if settings.ADJ.weight_mplc
     % --- Weighting according to elevation
 elseif settings.ADJ.weight_elev
     % observations on different frequencies get same weight factor
-    P_diag(:,:) = settings.ADJ.elev_weight_fun(elev_n);       
+    P_diag(:,:) = settings.ADJ.elev_weight_fun(elev_n*180/pi);       
     
     
     % --- No weighting of the observations

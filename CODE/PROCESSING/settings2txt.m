@@ -202,7 +202,7 @@ fprintf(fileID,'\n');
 
 fprintf(fileID,'%s\n','Ionosphere:');
 fprintf(fileID,'  %s%s\n','Model: ',settings.IONO.model);
-if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...')
+if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC') 
     fprintf(fileID,'    %s%s\n','Ionosphere source: ',settings.IONO.source);
     if strcmp(settings.IONO.source,'IONEX File')
         if strcmp(settings.IONO.model_ionex, 'Source:')
@@ -334,6 +334,9 @@ fprintf(fileID, '%s%6.3f\n%s%6.3f\n', '    code   = ',sqrt(settings.ADJ.var_code
 if strcmpi(settings.IONO.model,'Estimate with ... as constraint') 
     fprintf(fileID, '%s%6.3f\n', '    ionosphere  = ',sqrt(settings.ADJ.var_iono));
 end
+if strcmpi(settings.IONO.model,'Estimate VTEC') 
+    fprintf(fileID, '%s%6.3f\n', '    ionosphere  = ',sqrt(settings.ADJ.var_iono_vtec));
+end
 % Filter and filter settings
 fprintf(fileID,'  %s\n',settings.ADJ.filter.type);
 if ~strcmp(settings.ADJ.filter.type,'No Filter')
@@ -362,6 +365,9 @@ if ~strcmp(settings.ADJ.filter.type,'No Filter')
     end
     if contains(settings.IONO.model, 'Estimate')
         fprintf(fileID,'    %s%11.3f%s%11.3f%s%d\n','Ionosphere:         ',sqrt(settings.ADJ.filter.var_iono),     ' | ',sqrt(settings.ADJ.filter.Q_iono),      ' | ', settings.ADJ.filter.dynmodel_iono);
+    end
+    if strcmp(settings.IONO.model, 'Estimate VTEC')
+        fprintf(fileID,'    %s%11.3f%s%11.3f%s%d\n','Ionosphere VTEC:         ',sqrt(settings.ADJ.filter.var_iono_vtec),     ' | ',sqrt(settings.ADJ.filter.Q_iono_vtec),      ' | ', settings.ADJ.filter.dynmodel_iono_vtec);
     end
 end
 fprintf(fileID,'\n');

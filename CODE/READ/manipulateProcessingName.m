@@ -75,6 +75,8 @@ if contains(settings.PROC.name, '$')
                 iono_str = '3iflc';
             case 'Estimate with ... as constraint'
                 iono_str = 'constr';
+            case 'Estimate VTEC'
+                iono_str = 'vtec_constr';
             case 'Correct with ...'
                 iono_str = 'corr';
             case 'off'

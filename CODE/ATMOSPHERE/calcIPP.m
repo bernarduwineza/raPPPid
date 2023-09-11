@@ -31,13 +31,16 @@ phi_rx = atan((1-Const.WGS84_E_SQUARE)*tan(phi_rx));
 
 
 % compute latitude of ionospheric pierce point, (E.5.17)
-phi_IPP = asin(cos(alpha)*sin(phi_rx) + sin(alpha)*cos(phi_rx)*cos(Az));
+phi_IPP = asin(cos(alpha)*sin(phi_rx) + sin(alpha)*cos(phi_rx).*cos(Az));
 
 % compute longitude of ionospheric pierce point
-if      (phi_rx >  70*pi/180 &&  tan(alpha)*cos(Az)>tan(pi/2-phi_rx)) || ...
-        (phi_rx < -70*pi/180 && -tan(alpha)*cos(Az)>tan(pi/2+phi_rx))
-    lam_IPP = lam_rx + pi - asin(sin(alpha)*sin(Az)/cos(phi_IPP));  % (E.5.18a)
-else
-    lam_IPP = lam_rx + asin(sin(alpha)*sin(Az)/cos(phi_IPP));       % (E.5.18b)
+lam_IPP = zeros(size(Az));
+for i=1:length(Az)
+    if      (phi_rx >  70*pi/180 &&  any(tan(alpha(i,:)).*cos(Az(i,:))>tan(pi/2-phi_rx))) || ...
+            (phi_rx < -70*pi/180 && any(-tan(alpha(i,:)).*cos(Az(i,:))>tan(pi/2+phi_rx)))
+        lam_IPP(i,:) = lam_rx + pi - asin(sin(alpha(i,:)).*sin(Az(i,:))./cos(phi_IPP(i,:)));  % (E.5.18a)
+    else
+        lam_IPP(i,:) = lam_rx + asin(sin(alpha(i,:)).*(sin(Az(i,:))./cos(phi_IPP(i,:))));       % (E.5.18b)
+    end
 end
 

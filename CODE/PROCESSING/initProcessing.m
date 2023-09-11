@@ -183,18 +183,30 @@ storeData.zwd = zeros(tot_eps,1);
 storeData.N_1    = zeros(tot_eps,399);              % float ambiguities
 storeData.N_var_1 = zeros(tot_eps,399);             % variance of float ambiguities
 storeData.residuals_code_1 = zeros(tot_eps,399);
-if strcmpi(settings.PROC.method,'Code + Phase'); storeData.residuals_phase_1 = zeros(tot_eps,399); end
+storeData.residuals_code_var_1 = zeros(tot_eps,399);
+if strcmpi(settings.PROC.method,'Code + Phase')
+    storeData.residuals_phase_1 = zeros(tot_eps,399); 
+    storeData.residuals_phase_var_1 = zeros(tot_eps,399);
+end
 if proc_frqs > 1
     storeData.N_2    = zeros(tot_eps,399);
     storeData.N_var_2 = zeros(tot_eps,399);
     storeData.residuals_code_2 = zeros(tot_eps,399);
-    if strcmpi(settings.PROC.method,'Code + Phase'); storeData.residuals_phase_2 = zeros(tot_eps,399); end
+    storeData.residuals_code_var_2 = zeros(tot_eps,399);
+    if strcmpi(settings.PROC.method,'Code + Phase')
+        storeData.residuals_phase_2 = zeros(tot_eps,399); 
+        storeData.residuals_phase_var_2 = zeros(tot_eps,399);
+    end
 end
 if proc_frqs > 2
     storeData.N_3    = zeros(tot_eps,399);
     storeData.N_var_3 = zeros(tot_eps,399);
     storeData.residuals_code_3 = zeros(tot_eps,399);
-    if strcmpi(settings.PROC.method,'Code + Phase'); storeData.residuals_phase_3 = zeros(tot_eps,399); end
+    storeData.residuals_code_var_3 = zeros(tot_eps,399);
+    if strcmpi(settings.PROC.method,'Code + Phase')
+        storeData.residuals_phase_3 = zeros(tot_eps,399); 
+        storeData.residuals_phase_var_3 = zeros(tot_eps,399);
+    end
 end
 
 % Ambiguity Fixing is enabled
@@ -280,6 +292,20 @@ if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(set
     storeData.constraint = false(tot_eps,1);      % set to true when ionospheric constraint is used
     storeData.iono_est = zeros(tot_eps,399);      % values of estimated ionospheric delay
 end
+
+%when VTEC modeling
+if strcmpi(settings.IONO.model,'Estimate VTEC')  
+    storeData.iono_est = zeros(tot_eps,399);                            % values of estimated ionospheric delay
+    storeData.bspline_coeff = zeros(tot_eps, settings.IONO.Bspline.K);  % VTEC Bspline coefficients
+    storeData.lat_pp = zeros(tot_eps, 50);                              % latitude of pierce points for each epoch
+    storeData.lon_pp = zeros(tot_eps, 50);                              % longitude of pierce points for each epoch
+end
+
+%---DEBUG_CLK
+storeData.clock_drift = zeros(tot_eps,1);
+storeData.clock_var = zeros(tot_eps,1);
+%---
+
 % for saving the code and phase observations
 storeData.C1 = zeros(tot_eps,399);
 storeData.C2 = zeros(tot_eps,399);

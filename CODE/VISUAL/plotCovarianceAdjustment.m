@@ -53,7 +53,7 @@ prns = prns(bool_sats);                 % prn numbers of observed satellites in 
 
 
 s_f = noSats*frqs;                      % satellites x frequencies
-bool_iono = strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate');
+bool_iono = strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate') || strcmpi(settings.IONO.model,'Estimate VTEC');
 no_ticks = NO_PARAM + s_f + bool_iono*noSats;   % number of ticks
 
 % load colors

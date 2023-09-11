@@ -33,6 +33,9 @@ no_sats = numel(Epoch.sats);
 if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate')
     n = numel(Adjust.param);
     idx = (n-no_sats+1):n;
+    %---DEBUG_CLK
+    idx = (n-no_sats):n-1;
+    %---
     iono = Adjust.param(idx);   % estimated ionospheric delay on 1st frequency
     if num_freq > 1
         k_2 = f1.^2 ./ f2.^2;       % to convert estimated ionospheric delay to 2nd frequency

@@ -143,7 +143,8 @@ if bool_phase
             frqs = frqs(outlier_p);
             omc_value = omc_phase_(outlier_p);
             for i = 1:numel(prns_phase)
-                fprintf('PRN %03.0f, phase %d excluded: omc = %06.3f m [%06.3f]            \n', prns_phase(i), frqs(i), omc_value(i), thresh_p)
+                fprintf('PRN %03.0f, phase %d excluded: omc = %06.3f m [%06.3f]            \n', ...
+                    prns_phase(i), frqs(i), omc_value(i), thresh_p)
             end
         end
     end

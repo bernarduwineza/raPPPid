@@ -131,7 +131,7 @@ for i_sat = 1:num_sat
     % ----- Vectors, Angles, Distance between Receiver and Satellite -----
     
     % --- Azimuth, Elevation, zenith distance, cutoff-angle ---
-    [az, el] = topocent(pos_XYZ,Rot_X-pos_XYZ);     % calculate azimuth and elevation [°]
+    [az, el] = topocent(pos_XYZ,Rot_X-pos_XYZ);     % calculate azimuth and elevation [ï¿½]
     if el < settings.PROC.elev_mask         % elevation is under cut-off-angle
         cutoff = true;                      % eliminate satellite
         status = 2;
@@ -159,7 +159,7 @@ for i_sat = 1:num_sat
     
     % ----- Ionosphere -----
     iono(1:num_freq) = 0;
-    if iteration > 1 && ((strcmpi(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model, 'Correct with ...'))  && ~isnan(Ttr))
+    if iteration > 1 && ((strcmpi(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model, 'Correct with ...') || strcmpi(settings.IONO.model, 'Estimate VTEC'))  && ~isnan(Ttr))
         switch settings.IONO.source
             case 'IONEX File'
                 % calculate ionospheric correction from gim or klobuchar
@@ -262,7 +262,7 @@ for i_sat = 1:num_sat
     % --- Satellite Antenna Phase Center Correction ---
     % convert observation from Antenna Phase Center to Center of Mass which
     % is necessary when orbit/clock product refers to the CoM
-    % ||| check´n´change for not sp3
+    % ||| checkï¿½nï¿½change for not sp3
     dX_PCO_SAT_ECEF_corr = zeros(num_freq,1);
     if settings.OTHER.bool_sat_pco && settings.ORBCLK.bool_sp3 && ~cutoff   	
         % satellite Phase Center Offset and precise ephemerides are enabled
@@ -314,8 +314,8 @@ for i_sat = 1:num_sat
     model.trop(i_sat,frqs) = trop;              % Troposphere delay for elevation
     model.iono(i_sat,frqs) = iono(frqs);        % Ionosphere delay
     % Observation direction
-    model.az(i_sat,frqs)   = az;                % Satellite azimuth [°]
-    model.el(i_sat,frqs)   = el;                % Satellite elevation [°]
+    model.az(i_sat,frqs)   = az;                % Satellite azimuth [ï¿½]
+    model.el(i_sat,frqs)   = el;                % Satellite elevation [ï¿½]
     % Phase center offsets and variations
     model.dX_ARP_ECEF_corr(i_sat,frqs)= dX_ARP_ECEF_corr;               % Receiver antenna reference point correction in ECEF
     model.dX_PCO_rec_corr(i_sat,frqs) = dX_PCO_REC_ECEF_corr(frqs);     % Receiver phase center offset correction in ECEF

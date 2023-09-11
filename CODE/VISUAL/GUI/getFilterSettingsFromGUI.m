@@ -63,4 +63,7 @@ filtersetts.ADJ.filter.var_iono = str2double( get(handles.edit_filter_iono_sigma
 filtersetts.ADJ.filter.Q_iono = str2double( get(handles.edit_filter_iono_Q, 'String') )^2;          % system noise of ionosphere
 filtersetts.ADJ.filter.dynmodel_iono = get(handles.popupmenu_filter_iono_dynmodel, 'Value') - 1;
 
-
+% Ionospheric VTEC
+filtersetts.ADJ.filter.var_iono_vtec = str2double( get(handles.edit_filter_iono_vtec_sigma0, 'String') )^2;    % a-priori-variance of ionosphere VTEC
+filtersetts.ADJ.filter.Q_iono_vtec = str2double( get(handles.edit_filter_iono_vtec_Q, 'String') )^2;          % system noise of ionosphere VTEC
+filtersetts.ADJ.filter.dynmodel_iono_vtec = get(handles.popupmenu_filter_iono_vtec_dynmodel, 'Value') - 1;

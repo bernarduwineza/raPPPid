@@ -1,5 +1,5 @@
 function dx = KalmanFilterIterative(Adjust, x_pred)
-% Function for Kalm Filter with inner-epoch iteration. 
+% Function for Kalman Filter with inner-epoch iteration. 
 % The change of the parameters is estimated as pseudo-observation trough 
 % an inner-epoch iteration. Start of the iteration is the zero-vector as 
 % the change of the parameters is expected to be zero.
@@ -41,7 +41,7 @@ A(idx_nan, :) = 0;
 % remove the columns of those parameters which do not contribute to the 
 % adjustment which should increase the numerical stability
 zero_columns = all(A == 0, 1);                  % check which columns are zero 
-zero_columns(Adjust.NO_PARAM:end) = 0;          % do not remove ambiguities or estimated ionosphere
+zero_columns(Adjust.NO_PARAM+1:end) = 0;          % do not remove ambiguities or estimated ionosphere
 A(:,zero_columns) = [];
 P_x(:,zero_columns) = [];
 P_x(zero_columns,:) = [];
@@ -71,14 +71,15 @@ dx.Qxx(idx,idx)	= Qxx;
 
 
 % not used:
-% dx.l         = l_adj;    	% vector of adjusted observations
-% sigma2_adj = v'*P_l*v / r;                    % Empirical Variance
-% Qvv = cholinv(P_l) - A*Qxx*A';                % Cofactor Matrix of Residuals
-% dx.Sxx(idx,idx)	= Qxx * sigma2_adj;     % Covariance Matrix of Parameters
-% dx.Qvv    = Qvv;                         % Cofactor Matrix of Residuals
-% dx.Svv    = dx.Qvv * sigma2_adj;          % Covariance Matrix of Residuals
-% dx.r      = r;                           % redundancy
-% dx.sigma2 = sigma2_adj;              	% empirical variance of parameters
+dx.l         = l_adj;    	% vector of adjusted observations
+sigma2_adj = v'*P_l*v / r;                    % Empirical Variance
+Qvv = cholinv(P_l) - A*Qxx*A';                % Cofactor Matrix of Residuals
+dx.Sxx(idx,idx)	= Qxx * sigma2_adj;     % Covariance Matrix of Parameters
+dx.Qvv    = Qvv;                         % Cofactor Matrix of Residuals
+dx.Svv    = dx.Qvv * sigma2_adj;          % Covariance Matrix of Residuals
+dx.r      = r;                           % redundancy
+dx.sigma2 = sigma2_adj;              	% empirical variance of parameters
+dx.x_adj  = x_adj;
 
 
 end

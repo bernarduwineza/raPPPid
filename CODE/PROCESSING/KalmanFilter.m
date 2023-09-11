@@ -86,3 +86,4 @@ else
 end
 % save residuals
 Adjust.res = res;
+Adjust.res_var = Q_l + A*Q_x*A'; 

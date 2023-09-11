@@ -39,7 +39,7 @@ end
 
 
 % --- storeData
-if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...')
+if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimat VTEC')
     storeData.iono_corr = sparse(storeData.iono_corr);
     if settings.EXP.storeData_iono_mf && isfield(storeData, 'iono_mf')
         storeData.iono_mf = sparse(storeData.iono_mf);
@@ -48,7 +48,7 @@ if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(set
         storeData.iono_vtec = sparse(storeData.iono_vtec);
     end
 end
-if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate')  % ionosphere is estimated
+if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate') || strcmpi(settings.IONO.model,'Estimat VTEC') % ionosphere is estimated
     storeData.iono_est = sparse(storeData.iono_est);
 end
 storeData.exclude = sparse(storeData.exclude);

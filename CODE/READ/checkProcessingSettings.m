@@ -201,7 +201,7 @@ end
 
 
 % No manually selected IONEX file 
-if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...')
+if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
     if strcmpi(settings.IONO.model_ionex,'manually') && isempty(settings.IONO.file_ionex)
         errordlg('Please select an IONEX-File!', windowname);
         valid_settings = false;     return
@@ -301,6 +301,11 @@ if settings.ADJ.filter.dynmodel_iono == 0 && settings.ADJ.filter.Q_iono == 0
     valid_settings = false; return
 end
 
+if settings.ADJ.filter.dynmodel_iono_vtec == 0 && settings.ADJ.filter.Q_iono_vtec == 0
+    errordlg('When using no dynamic model for Ionosphere VTEC, the system noise Q must be set!', 'Error: Filter Settings');
+    valid_settings = false; return
+end
+
 % Phase Biases are implemented only for correction stream
 % (recorded/manually or from CNES Archive)
 if strcmp(settings.BIASES.phase, 'TUW (not implemented)') || strcmp(settings.BIASES.phase, 'NRCAN (not implemented)')
@@ -381,7 +386,7 @@ if strcmp(settings.BIASES.code, 'CODE OSBs')
 end
 
 % CODE MGEX Biases are not suitable for estimating or constraining ionosphere
-if strcmp(settings.BIASES.code, 'CODE MGEX')&& (strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate'))
+if strcmp(settings.BIASES.code, 'CODE MGEX')&& (strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate') || strcmpi(settings.IONO.model,'Estimate VTEC'))
     errordlg({'CODE MGEX Biases are not suitable for', 'estimating or constraining the ionosphere.'}, windowname);
     valid_settings = false;     return
 end
@@ -534,7 +539,7 @@ if (GLO_on || GAL_on || BDS_on) && settings.ORBCLK.bool_brdc && strcmp(settings.
 end
 
 % NeQuick model is implemented, but absurdly slow and not tested
-if (strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...')) ...
+if (strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')) ...
         && strcmpi(settings.IONO.source,'NeQuick model')  
     errordlg({'NeQuick is implemented but absurdly slow.', 'Use another ionosphere model!'}, windowname)
     valid_settings = false; return
@@ -577,7 +582,7 @@ if settings.INPUT.bool_realtime
     end
     % Ionosphere
     if strcmp(settings.IONO.model, 'Estimate with ... as constraint') || ...
-            strcmp(settings.IONO.model, 'Correct with ...')
+            strcmp(settings.IONO.model, 'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
         if strcmp(settings.IONO.source, 'IONEX File')
             if ~strcmp(settings.IONO.file_source, 'IGS RT GIM') && ~strcmp(settings.IONO.file_source, 'GIOMO predicted')
                 fprintf(2, 'Ionosphere: Change to real-time capable product.\n')
@@ -789,7 +794,7 @@ if strcmp(settings.TROPO.zhd, 'Tropo file') || strcmp(settings.TROPO.zwd, 'Tropo
 end
 
 % Ionosphere
-if strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmp(settings.IONO.model, 'Correct with ...')
+if strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmp(settings.IONO.model, 'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
     if strcmp(settings.IONO.source, 'IONEX File') && strcmp(settings.IONO.model_ionex, 'manually:')
         valid_settings = checkFileExistence(settings.IONO.file_ionex, 'IONEX File', valid_settings);
     end

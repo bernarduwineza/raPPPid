@@ -43,6 +43,8 @@ if contains(settings.IONO.model, 'IF-LCs') || strcmp(settings.IONO.model, 'off')
     % no iono values to plot
     set(handles.checkbox_plot_iono,          'Enable', 'off');
     set(handles.checkbox_plot_iono,          'Value', 0);
+    % set(handles.checkbox_plot_iono_comp,     'Enable', 'off');
+    % set(handles.checkbox_plot_iono_comp,     'Value', 0);
 end
 if ~contains(settings.PROC.method, 'Phase') || (~settings.OTHER.CS.l1c1 && ~settings.OTHER.CS.DF && ~settings.OTHER.CS.Doppler && ~settings.OTHER.CS.TimeDifference)
     % no cycle-slip-detection is enabled

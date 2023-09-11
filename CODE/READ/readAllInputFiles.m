@@ -298,7 +298,7 @@ end
 
 %% Models - Ionosphere
 
-if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...')
+if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
     path_ionex = settings.IONO.file_ionex;
     % check for auto-detection
     if strcmpi(settings.IONO.model_ionex, 'Auto-Detection:')
@@ -332,7 +332,7 @@ if bool_nav_klo || bool_nav_neq
 end
 
 % if NeQuick model is to be applied, then read and save some of its coefficients already here
-if (strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...')) ...
+if (strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')) ...
         && strcmpi(settings.IONO.source,'NeQuick model')   &&   bool_nav_neq
     
     % load ccir-File
@@ -483,7 +483,7 @@ input = checkAntex(input, settings, obs.antenna_type);
 
 % Read data ocean loading correction
 if settings.OTHER.ocean_loading
-    input.OTHER.OcLoad = read_blq('..\DATA\OceanLoading.blq', obs.stationname);
+    input.OTHER.OcLoad = read_blq('../DATA/OceanLoading.blq', obs.stationname);
     if isempty(input.OTHER.OcLoad)
         settings.OTHER.ocean_loading = false; 	% station was not found in OceanLoading.blq
     end
@@ -546,7 +546,7 @@ if bool_print
     fprintf('  %s%s\n','zwd: ',settings.TROPO.zwd);
     if strcmpi(settings.TROPO.zwd,'e (in situ) + Askne')
         fprintf('    %s%5.2f%s\n','q: ',settings.TROPO.q,' %');
-        fprintf('    %s%6.2f%s\n','T: ',settings.TROPO.T,' °C')
+        fprintf('    %s%6.2f%s\n','T: ',settings.TROPO.T,' ï¿½C')
     end
     fprintf('  %s%s\n','mfh: ',settings.TROPO.mfh)
     fprintf('  %s%s\n','mfw: ',settings.TROPO.mfw)
@@ -558,7 +558,7 @@ if bool_print
     % Ionosphere
     fprintf('%s\n','Ionosphere:');
     fprintf('  %s%s\n','Model: ',settings.IONO.model)
-    if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...')
+    if strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
         fprintf([settings.IONO.model_ionex,' ',settings.IONO.file_ionex]);
         if strcmpi(settings.IONO.model,'Correct with ...')
             fprintf('    %s%s\n','TEC-Interpolation: ',settings.IONO.interpol);

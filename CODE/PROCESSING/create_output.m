@@ -127,8 +127,8 @@ if settings.EXP.results_float
     fprintf(fid,'%s\n','# (7) sigma receiver position: x [m]');
     fprintf(fid,'%s\n','# (8) sigma receiver position: y [m]');
     fprintf(fid,'%s\n','# (9) sigma receiver position: z [m]');
-    fprintf(fid,'%s\n','# (10) receiver position: latitude [°]');
-    fprintf(fid,'%s\n','# (11) receiver position: longitude [°]');
+    fprintf(fid,'%s\n','# (10) receiver position: latitude [ï¿½]');
+    fprintf(fid,'%s\n','# (11) receiver position: longitude [ï¿½]');
     fprintf(fid,'%s\n','# (12) receiver position: height [m]');
     fprintf(fid,'%s\n','# (13) receiver position: x_UTM [m]');
     fprintf(fid,'%s\n','# (14) receiver position: y_UTM [m]');
@@ -198,8 +198,8 @@ if settings.AMBFIX.bool_AMBFIX && settings.EXP.results_fixed    % only if ambigu
     fprintf(fid,'%s\n','# (7) sigma receiver position: x [m]');
     fprintf(fid,'%s\n','# (8) sigma receiver position: y [m]');
     fprintf(fid,'%s\n','# (9) sigma receiver position: z [m]');
-    fprintf(fid,'%s\n','# (10) receiver position: phi [°]');
-    fprintf(fid,'%s\n','# (11) receiver position: lambda [°]');
+    fprintf(fid,'%s\n','# (10) receiver position: phi [ï¿½]');
+    fprintf(fid,'%s\n','# (11) receiver position: lambda [ï¿½]');
     fprintf(fid,'%s\n','# (12) receiver position: height [m]');
     fprintf(fid,'%s\n','# (13) receiver position: x_UTM [m]');
     fprintf(fid,'%s\n','# (14) receiver position: y_UTM [m]');
@@ -232,7 +232,7 @@ if settings.EXP.nmea
     elseif settings.INPUT.use_GPS;        str_sol = 'GP';
     elseif settings.INPUT.use_GLO;        str_sol = 'GL';
     elseif settings.INPUT.use_GAL;        str_sol = 'GA';
-    elseif settings.INPUT.use_GAL;        str_sol = 'BD';  
+    elseif settings.INPUT.use_BDS;        str_sol = 'BD';  
     end
     UTC = timeCalculated - obs.leap_sec;
     nmea_path = [settings.PROC.output_dir, '/results.nmea'];
@@ -261,8 +261,8 @@ end
 if ~settings.INPUT.bool_parfor
     approx_pos_WGS84 = cart2geo(settings.INPUT.pos_approx);
     fprintf('Approximate Position (WGS84)\n');
-    fprintf('phi:\t %9.5f [°]\n',    approx_pos_WGS84.ph*(180/pi));
-    fprintf('lambda:\t %9.5f [°]\n', approx_pos_WGS84.la*(180/pi));
+    fprintf('phi:\t %9.5f [ï¿½]\n',    approx_pos_WGS84.ph*(180/pi));
+    fprintf('lambda:\t %9.5f [ï¿½]\n', approx_pos_WGS84.la*(180/pi));
     fprintf('h:\t\t %9.3f [m]\n',  approx_pos_WGS84.h);
     fprintf('X:\t%12.3f [m]\n',  settings.INPUT.pos_approx(1));
     fprintf('Y:\t%12.3f [m]\n',  settings.INPUT.pos_approx(2));

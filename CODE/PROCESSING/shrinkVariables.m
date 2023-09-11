@@ -145,11 +145,11 @@ if (settings.PROC.timeFrame(2) - settings.PROC.timeFrame(1)) > q
             storeData.residuals_phase_fix_3 = storeData.residuals_phase_fix_3(eps,:);
         end
     end
-    if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate')   % if ionosphere is estimated
+    if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate')  || strcmpi(settings.IONO.model,'Estimat VTEC')  % if ionosphere is estimated
         storeData.constraint = storeData.constraint(eps,:);
         storeData.iono_est = storeData.iono_est(eps,:);
     end
-    if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...')
+    if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimat VTEC')
         storeData.iono_corr         = storeData.iono_corr(eps,:);
         if ~settings.EXP.storeData_iono_mf && isfield(storeData, 'iono_mf')
             storeData.iono_mf           = storeData.iono_mf(eps,:);

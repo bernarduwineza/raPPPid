@@ -43,10 +43,10 @@ rec_clk_true = get_rec_clk_estimation(clk_file, station, startdate);
 
 % plot GPS
 if isGPS
-    plot_clk(i, n, resets_h, strTitlePlot1, hours, strXAxis, rec_clk_GPS, ['GPS ',strYAxis], 'r-')
+    plot_clk(i, n, resets_h, strTitlePlot1, hours, strXAxis, rec_clk_GPS, ['GPS ',strYAxis], 'r.')
     i = i + 1;
     if ~isempty(rec_clk_true)
-        plot(rec_clk_true(:,1), rec_clk_true(:,2), 'g-', 'LineWidth', 2)
+        plot(rec_clk_true(:,1), rec_clk_true(:,2), 'g.', 'LineWidth', 2)
         % create histogram of difference
         % true_all = interp1(rec_clk_true(:,1), rec_clk_true(:,2), hours);
         % diff = true_all - rec_clk_GPS';
@@ -55,17 +55,17 @@ if isGPS
 end
 % plot Glonass
 if isGLO
-    plot_clk(i, n, resets_h, strTitlePlot2, hours, strXAxis, rec_clk_GLO, ['GLO ',strYAxis], 'c-')
+    plot_clk(i, n, resets_h, strTitlePlot2, hours, strXAxis, rec_clk_GLO, ['GLO ',strYAxis], 'c.')
     i = i + 1;
 end
 % plot Galileo
 if isGAL
-    plot_clk(i, n, resets_h, strTitlePlot3, hours, strXAxis, rec_clk_GAL, ['GAL ',strYAxis], 'b-')
+    plot_clk(i, n, resets_h, strTitlePlot3, hours, strXAxis, rec_clk_GAL, ['GAL ',strYAxis], 'b.')
     i = i + 1;
 end
 % plot Beidou
 if isBDS
-    plot_clk(i, n, resets_h, strTitlePlot4, hours, strXAxis, rec_clk_BDS, ['BDS ',strYAxis], 'm-')
+    plot_clk(i, n, resets_h, strTitlePlot4, hours, strXAxis, rec_clk_BDS, ['BDS ',strYAxis], 'm.')
 end
 
 % add customized datatip

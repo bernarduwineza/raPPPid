@@ -73,7 +73,8 @@ handles.station = station;
 handles.zhd_model = storeData.zhd;      % modeled ZHD
 handles.zwd_model = storeData.zwd;      % modeled ZWD
 handles.zwd_est   = storeData.param(:,4);    % estimated ZWD
-handles.IGS_est   = []; handles.checkbox_IGS_ZTD.Enable = 'off';
+handles.IGS_est   = [];
+handles.checkbox_IGS_ZTD.Enable = 'off';
 handles.leg_txt   = [];
 
 % check if IGS troposphere file already exists

@@ -46,7 +46,7 @@ for j = 1:no_frqs
         subplot(no_frqs, no_GNSS, i_plot); i_plot = i_plot + 1;
         hold on
         gps_prns = obs_prns(obs_prns < 100);
-        plot(hours, STD_plot(:, gps_prns));
+        plot(hours, STD_plot(:, gps_prns), '.');
         % style
         title(['Standard Deviation GPS Ambiguities ' frq_string])
         xlabel(label_x)
@@ -63,7 +63,7 @@ for j = 1:no_frqs
         subplot(no_frqs, no_GNSS, i_plot); i_plot = i_plot + 1;
         hold on
         glo_prns = obs_prns(obs_prns > 100 & obs_prns < 200);
-        plot(hours, STD_plot(:, glo_prns));
+        plot(hours, STD_plot(:, glo_prns), '.');
         % style
         title(['Standard Deviation Glonass Ambiguities ' frq_string])
         xlabel(label_x)
@@ -80,7 +80,7 @@ for j = 1:no_frqs
         subplot(no_frqs, no_GNSS, i_plot); i_plot = i_plot + 1;
         hold on
         gal_prns = obs_prns(obs_prns > 200 & obs_prns < 300);
-        plot(hours, STD_plot(:, gal_prns));
+        plot(hours, STD_plot(:, gal_prns), '.');
         % style
         title(['Standard Deviation Galileo Ambiguities ' frq_string])
         xlabel(label_x)
@@ -97,7 +97,7 @@ for j = 1:no_frqs
         subplot(no_frqs, no_GNSS, i_plot);
         hold on
         bds_prns = obs_prns(obs_prns > 300 & obs_prns < 400); i_plot = i_plot + 1;
-        plot(hours, STD_plot(:, bds_prns));        
+        plot(hours, STD_plot(:, bds_prns), '.');        
         % style
         title(['Standard Deviation BeiDou Ambiguities ' frq_string])
         xlabel(label_x)

@@ -84,9 +84,32 @@ while it < 15                           % Start iteration (because of linearizat
     if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Estimate')
         n = numel(Adjust.param);
         idx_iono = n-no_sats+1:n;
+        %---DEBUG_CLK
+        idx_iono = n-no_sats:n-1;
+        %---
         bool_iono = ( Adjust.param(idx_iono) == 0 );
         Adjust.param(idx_iono(bool_iono)) = model.iono(bool_iono,1);
-    end  
+    end
+
+    if strcmpi(settings.IONO.model,'Estimate VTECCCC')
+        n = numel(Adjust.param);
+        idx_iono = n-settings.IONO.Bspline.K+1:n;
+        bool_iono = ( Adjust.param(idx_iono) == 0 );
+
+        idx_sats = n-no_sats+1:n;
+        bool_sats = ( Adjust.param(idx_sats) == 0 );
+
+        % Iono height (meters)
+        H = 450e3;
+        % Receiver position in geodetic coordinates
+        pos_geo = cart2geo(Adjust.param(1:3));
+        % Iono pierce point
+        [lat_pp, lon_pp] = calcIPP(pos_geo.ph, pos_geo.la, model.az*pi/180, model.el*pi/180, H);
+
+        [lat_lon_bases] = compute_bspline_bases(settings, lat_pp, lon_pp); 
+        a = lat_lon_bases*model.iono(bool_sats,1);
+        Adjust.param(idx_iono(bool_iono)) = a;
+    end 
     
     % --- update model with modeled observations
     [model.model_code, model.model_phase, model.model_doppler] = ...
@@ -102,7 +125,7 @@ while it < 15                           % Start iteration (because of linearizat
     % --- create A-Matrix and observed minus computed
     switch settings.PROC.method        % depending on Functional Model
         case 'Code + Phase'
-            Adjust = Designmatrix_ZD(Adjust, Epoch, model, settings);
+            [Adjust, Epoch] = Designmatrix_ZD(Adjust, Epoch, model, settings);
         case {'Code Only', 'Code (Doppler Smoothing)', 'Code (Phase Smoothing)'}
             Adjust = Designmatrix_code_ZD( Adjust, Epoch, model, settings);
         case 'Code + Doppler'
@@ -118,8 +141,11 @@ while it < 15                           % Start iteration (because of linearizat
     
     % --- check if too many satellites have been excluded because of e.g. 
     % elevation cutoff, check_omc, missing broadcast corrections...
-    n_gps = sum(Epoch.gps & ~Epoch.exclude);    n_glo = sum(Epoch.glo & ~Epoch.exclude);
-    n_gal = sum(Epoch.gal & ~Epoch.exclude);    n_bds = sum(Epoch.bds & ~Epoch.exclude);
+    n_gps = sum(Epoch.gps & ~Epoch.exclude);    
+    n_glo = sum(Epoch.glo & ~Epoch.exclude);
+    n_gal = sum(Epoch.gal & ~Epoch.exclude);    
+    n_bds = sum(Epoch.bds & ~Epoch.exclude);
+
     bool_enough_sats = check_min_sats(settings.INPUT.use_GPS, settings.INPUT.use_GLO, settings.INPUT.use_GAL, settings.INPUT.use_BDS, ...
         n_gps, n_glo, n_gal, n_bds, settings.INPUT.use_GNSS);
     if ~bool_enough_sats && ~settings.INPUT.bool_parfor
@@ -146,15 +172,24 @@ while it < 15                           % Start iteration (because of linearizat
 
         case 'Kalman Filter Iterative'      % Kalman Filter with inner-epoch iteration
             if it == 1
-                x_pred = zeros(size(Adjust.A,2),1);              
+                x_pred              = zeros(size(Adjust.A,2),1);
+                Adjust.dx_k_minus   = x_pred;
+                Adjust.P_k_minus    = Adjust.param_sigma_pred; 
             end
-            dx = KalmanFilterIterative(Adjust, x_pred);
+            [dx] = KalmanFilterIterativeStandard(Adjust, x_pred);
+            % dx = KalmanFilterIterative(Adjust, x_pred);
+            % Adjust.P_k_minus    = dx.P_k1_minus; 
+            Adjust.dx_k_minus   = Adjust.dx_k_minus - dx.dx_k1_minus;
+            % Adjust.res_var = dx.Qvv; 
+            
+            % x_pred = x_pred - dx.dx_k1_minus;
             x_pred = x_pred - dx.x;
             if norm(dx.x(1:3)) < it_thresh      % Norm of change in coordinates smaller than e-4 m
                 Adjust = stop_iteration(Adjust, dx);
                 break;
             else        % inner-epoch iteration continues
-                Adjust.param = Adjust.param + dx.x;
+                % Adjust.param = Adjust.param + dx.x;
+                Adjust.param = Adjust.param + dx.dx_k1_minus;
             end
             
         case 'No Filter'      			% perform single-epoch Standard-LSQ-Adjustment
@@ -178,13 +213,14 @@ if ~strcmp(settings.ADJ.filter.type,'Kalman Filter') && norm(dx.x(1:3)) >= it_th
     end
     Adjust.float = false;
     Adjust.res = NaN(numel(Adjust.omc),1);
+    Adjust.res_var = dx.res_var;
 end
 
 % Phase&Code-Processing AND at least one satellite is under cutoff, set 
 % ambiguities to zero (because under cutoff)
 if strcmpi(settings.PROC.method, 'Code + Phase')   &&   any(Epoch.exclude(:,1))         
     kk = 1:(num_freq*no_sats);
-    kk = kk(Epoch.exclude(:));               % index-numbers of satellites and their frequencies under cutoff
+    kk = kk(Epoch.exclude(:));              % index-numbers of satellites and their frequencies under cutoff
     idx_amb = kk+NO_PARAM;                  % indices where to reset
     Adjust.param(idx_amb) = 0;              % reset ambiguity
     Adjust.param_sigma(idx_amb,:) = 0;      % reset covariance columns
@@ -196,18 +232,30 @@ end
 
 % If ionosphere delay is estimated AND at least one satellite is under
 % cutoff, set estimated ionospheric delay to zero (because under cutoff)
-if any(Epoch.exclude(:,1)) && (strcmpi(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model, 'Estimate'))      
+if any(Epoch.exclude(:,1)) && (strcmpi(settings.IONO.model, 'Estimate with ... as constraint') ...
+        || strcmpi(settings.IONO.model, 'Estimate'))      
     kk = 1:100;
     kk = kk(Epoch.exclude(:,1));	% index-numbers of satellites and their frequencies under cutoff
     idx_iono = kk+NO_PARAM;          % indices where to reset
     if strcmpi(settings.PROC.method, 'Code + Phase')
-        idx_iono = idx_iono + num_freq*no_sats;   % change indices because of ambiguities
+        idx_iono = idx_iono + num_freq*no_sats; % change indices because of ambiguities
     end
     Adjust.param(idx_iono) = 0;                 % reset estimated ionospheric delay
     Adjust.param_sigma(idx_iono,:) = 0;         % reset covariance columns
     Adjust.param_sigma(:,idx_iono) = 0;         % reset covariance rows
     for i=1:length(idx_iono)                    % reset variance
         Adjust.param_sigma( idx_iono(i), idx_iono(i) ) = settings.ADJ.filter.var_iono;
+    end
+end
+
+% If VTEC is estimated AND at least one satellite is under
+% cutoff, set estimated ionospheric delay to zero (because under cutoff)
+if any(Epoch.exclude(:,1)) && (strcmpi(settings.IONO.model, 'Estimate VTEC'))
+    kk = 1:100;
+    kk = kk(Epoch.exclude(:,1));	% index-numbers of satellites and their frequencies under cutoff
+    idx_iono = kk+NO_PARAM;          % indices where to reset
+    if strcmpi(settings.PROC.method, 'Code + Phase')
+        idx_iono = idx_iono + num_freq*no_sats; % change indices because of ambiguities
     end
 end
 
@@ -230,9 +278,13 @@ end     % ... of calc_float_solution.m
 
 %% AUXILIARY FUNCTIONS
 function Adjust = stop_iteration(Adjust, dx)
-Adjust.float = true;            % valid float solution
-Adjust.param = Adjust.param + dx.x;   	% save estimated parameters
-Adjust.res   = dx.v;            % save residuals of observations
-Adjust.param_sigma  = dx.Qxx;   % Cofactor Matrix of updated parameters...
-% ... used for filtering in adjustmentPreparation.m and fixing ambiguities
+    Adjust.float = true;            % valid float solution
+    % Adjust.param = Adjust.param + dx.x;   	% save estimated parameters
+    Adjust.param = Adjust.param + dx.dx_k1_minus;
+    Adjust.res   = dx.v;            % save residuals of observations
+    Adjust.param_sigma  = dx.Qxx;   % Cofactor Matrix of updated parameters...
+    % Adjust.res_var = dx.Qvv;         % Cofactor Matrix of residuals...
+    Adjust.res_var = dx.res_var;
+    % ... used for filtering in adjustmentPreparation.m and fixing ambiguities
+    Adjust.P_k_minus    = dx.P_k1_minus;
 end

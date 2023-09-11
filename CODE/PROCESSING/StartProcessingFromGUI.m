@@ -76,7 +76,7 @@ if bool_BATCH_PROC          % batch processing
         WaitMessage.Destroy;        % close batch processing waitbar
         
     else                    % use normal loop for batch processing
-        for i = 1:n              % loop over rows, process each row
+        for i = 1:un              % loop over rows, process each row
             ROW = TABLE(i,:);       % current row
             if STOP_CALC
                 break               % -> stop batch processing

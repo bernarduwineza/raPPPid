@@ -1,0 +1,48 @@
+function [Epoch] = compute_bspline_bases(Epoch, model, settings, Adjust)
+param   = Adjust.param; 
+
+% Receiver position in geodetic coordinates
+pos_geo = cart2geo(param(1:3));
+
+% Iono height
+H = 450e3;
+
+% Iono pierce point
+[lat_pp, lon_pp] = calcIPP(pos_geo.ph, pos_geo.la, model.az*pi/180, model.el*pi/180, H);
+
+kj1 = settings.IONO.Bspline.kj1;                             % number of basis functions
+kj2 = settings.IONO.Bspline.kj2;
+
+lat_degree = settings.IONO.Bspline.lat_degree; % Degree of the B-spline basis functions
+lon_degree = settings.IONO.Bspline.lon_degree;
+
+lat_min = 15; lat_max = 50;
+lon_min = -140; lon_max = -100;
+
+lat_knots = linspace(lat_min, lat_max, kj1-lat_degree+1);
+lat_knots = [repmat(lat_min, 1, lat_degree), lat_knots, repmat(lat_max, 1, lat_degree)];
+
+lon_knots = linspace(lon_min, lon_max, kj2-lon_degree+1);
+lon_knots = [repmat(lon_min, 1, lon_degree), lon_knots, repmat(lon_max, 1, lon_degree)];
+
+% Initialize a matrix to store the basis function values for each basis
+lat_bases = zeros(kj1, length(lat_pp));
+lon_bases = zeros(kj2, length(lon_pp));
+
+% Calculate B-spline basis functions
+for i = 1:kj1
+    lat_bases(i, :) = bspline_basis(i, lat_degree, lat_knots, lat_pp(:,1)*180/pi);
+end
+for i = 1:kj2
+    lon_bases(i, :) = bspline_basis(i, lon_degree, lon_knots, lon_pp(:,1)*180/pi);
+end
+lat_lon_bases = zeros(length(lat_bases(:,1))*length(lon_bases(:,1)), length(lat_pp));
+for i = 1:length(lat_pp)
+    lat_lon_bases(:,i) = kron(lat_bases(:,i), lon_bases(:,1));
+end
+
+% --- save the basis functions for the current epoch 
+Epoch.lat_lon_bases = lat_lon_bases; 
+Epoch.lat_pp = lat_pp(:,1)*180/pi;
+Epoch.lon_pp = lon_pp(:,1)*180/pi; 
+end

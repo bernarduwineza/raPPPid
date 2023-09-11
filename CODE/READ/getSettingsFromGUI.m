@@ -199,7 +199,20 @@ if strcmp(settings.IONO.model_ionex, 'Auto-Detection:')
     end
 end
 
+j1 = str2double(handles.edit_lat_res_level.String);
+j2 = str2double(handles.edit_lon_res_level.String); 
+settings.IONO.Bspline.lat_res_level = j1; 
+settings.IONO.Bspline.lon_res_level = j2;
+settings.IONO.Bspline.lat_degree = str2double(handles.edit_lat_degree.String); 
+settings.IONO.Bspline.lon_degree = str2double(handles.edit_lon_degree.String);
+settings.IONO.Bspline.kj1 = (2^j1) + 2; 
+settings.IONO.Bspline.kj2 = (2^j2) + 2; 
+settings.IONO.Bspline.K = (settings.IONO.Bspline.kj1)*(settings.IONO.Bspline.kj2);
 
+settings.IONO.Bspline.lat_min = str2double(handles.edit_lat_min.String);
+settings.IONO.Bspline.lon_min = str2double(handles.edit_lon_min.String);
+settings.IONO.Bspline.lat_max = str2double(handles.edit_lat_max.String);
+settings.IONO.Bspline.lon_max = str2double(handles.edit_lon_max.String);
 
 %% Models - Biases
 % Code
@@ -343,6 +356,7 @@ settings.ADJ.filter.type = string_all{value};		% 'No Filter' or 'Kalman Filter' 
 settings.ADJ.var_code 		 = str2double( get(handles.edit_Std_CA_Code, 'String') )^2;
 settings.ADJ.var_phase       = str2double( get(handles.edit_Std_Phase, 'String') )^2;
 settings.ADJ.var_iono        = str2double( get(handles.edit_Std_Iono, 'String') )^2;
+settings.ADJ.var_iono_vtec   = str2double( get(handles.edit_Std_Iono_vtec, 'String') )^2;
 % observation weighting
 settings.ADJ.weight_elev	 = get(handles.radiobutton_Elevation_Dependency, 'Value');
 settings.ADJ.elev_weight_fun = ...  % get elevation function string and convert to function handle
@@ -404,6 +418,11 @@ settings.ADJ.filter.dynmodel_amb = get(handles.popupmenu_filter_ambiguities_dynm
 settings.ADJ.filter.var_iono = str2double( get(handles.edit_filter_iono_sigma0, 'String') )^2;    % a-priori-variance of ionosphere
 settings.ADJ.filter.Q_iono = str2double( get(handles.edit_filter_iono_Q, 'String') )^2;          % system noise of ionosphere
 settings.ADJ.filter.dynmodel_iono = get(handles.popupmenu_filter_iono_dynmodel, 'Value') - 1;
+
+% Ionosphere VTEC
+settings.ADJ.filter.var_iono_vtec = str2double( get(handles.edit_filter_iono_vtec_sigma0, 'String') )^2;    % a-priori-variance of ionosphere VTEC
+settings.ADJ.filter.Q_iono_vtec = str2double( get(handles.edit_filter_iono_vtec_Q, 'String') )^2;          % system noise of ionosphere VTEC
+settings.ADJ.filter.dynmodel_iono_vtec = get(handles.popupmenu_filter_iono_vtec_dynmodel, 'Value') - 1;
 
 
 %% Run - Processing Options
@@ -561,6 +580,7 @@ settings.PLOT.residuals     = get(handles.checkbox_plot_residuals,      'Value')
 settings.PLOT.DOP           = get(handles.checkbox_plot_DOP,            'Value');
 % settings.PLOT.GI           	= get(handles.checkbox_plot_GI,             'Value');
 settings.PLOT.iono          = get(handles.checkbox_plot_iono,           'Value');
+% settings.PLOT.iono_comp     = get(handles.checkbox_plot_iono_comp,      'Value');
 settings.PLOT.cs            = get(handles.checkbox_plot_cs,             'Value');
 settings.PLOT.mp            = get(handles.checkbox_plot_mp,             'Value');
 settings.PLOT.appl_biases	= get(handles.checkbox_plot_appl_biases, 	'Value');

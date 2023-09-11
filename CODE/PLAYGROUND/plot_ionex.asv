@@ -1,0 +1,20 @@
+ionex = read_ionex_TUW('../DATA/IONO/2019/280/igsg2800.19i');
+
+
+no_maps = size(ionex.map,3);
+koeff = 10^ionex.exponent;
+
+
+for i = 1:no_maps
+    figure
+    iono_map = ionex.map(:,:,i)*koeff; 
+    im = imagesc(iono_map); 
+    im.Interpolation = 'bilinear';
+    clim([0 40])
+    colormap turbo
+    colorbar 
+    xlabel('Longitude (deg)')
+    ylabel('Latitute (deg)')
+    
+    yticks ()
+end

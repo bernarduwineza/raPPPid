@@ -119,7 +119,7 @@ end
 
 % IONEX file
 bool_downl_ionex = strcmp(settings.IONO.source,'IONEX File') && strcmp(settings.IONO.model_ionex,'Source:') &&...
-    (strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...'));
+    (strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC'));
 if bool_downl_ionex
     [settings] = DownloadIonex(settings, gpsweek, dow, yyyy, mm, doy);
 end
@@ -174,11 +174,13 @@ switch settings.BIASES.phase
         URL_host = 'igs.gnsswhu.cn:21';
         URL_folder = {['/pub/whu/phasebias/' yyyy '/bias/']; };
         URL_folder{2} = ['/pub/whu/phasebias/' yyyy '/clock/'];
-        files = {['WHU0IGSFIN_' yyyy doy '0000_01D_01D_ABS.BIA.Z']; };
+        % files = {['WHU0IGSFIN_' yyyy doy '0000_01D_01D_ABS.BIA.Z']; };
+        files = {['WUM0MGXRAP_' yyyy doy '0000_01D_01D_ABS.BIA.Z']; };
         if obs_startdate(1) < 2019
             files{2} = ['whp' gpsweek dow '.clk.Z'];
         else        % Wuhan changed naming of *.clk-file with 2019
-            files{2} = ['WHU5IGSFIN_' yyyy doy '0000_01D_30S_CLK.CLK.Z'];
+            % files{2} = ['WHU5IGSFIN_' yyyy doy '0000_01D_30S_CLK.CLK.Z'];
+            files{2} = ['WUM0MGXRAP_' yyyy doy '0000_01D_30S_CLK.CLK.Z'];
         end
         % download phase biases
         file_status = ftp_download(URL_host, URL_folder{1}, files{1}, target{1}, true);

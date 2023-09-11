@@ -32,7 +32,7 @@ if strcmp(filter_type, 'Kalman Filter Iterative')
     handles.edit_filter_coord_sigma0.String = sprintf('%.0f', F.KFI_coord_std);
     handles.edit_filter_coord_Q.String = num2str(F.KFI_coord_noise);
     handles.popupmenu_filter_coord_dynmodel.Value = F.KFI_coord_model + 1;
-    % zwd
+    % zwdcd 
     handles.edit_filter_zwd_sigma0.String = num2str(F.KFI_zwd_std);
     handles.edit_filter_zwd_Q.String = num2str(F.KFI_zwd_noise);
     handles.popupmenu_filter_zwd_dynmodel.Value = F.KFI_zwd_model + 1;

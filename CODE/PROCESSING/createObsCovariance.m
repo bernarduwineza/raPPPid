@@ -142,6 +142,20 @@ if strcmpi(settings.IONO.model,'Estimate with ... as constraint') && Adjust.cons
     P = blkdiag(P, inv(Q_iono));
 end
 
+%% add VTEC constraint part
+if strcmpi(settings.IONO.model,'Estimate VTEC')
+    v0 = settings.ADJ.var_iono_vtec;
+    iono_var = v0; 
+    % create covariance and weigth-matrix
+    % P_fac = sin(elev*pi/180).^2;    	% ionospheric pseudo-observations are elevation-weighted
+    P_fac = 1./(exp(-(elev-(25*pi/180)))+1);    	% ionospheric pseudo-observations are elevation-weighted
+   	P_fac = 1.0*ones(1,length(Adjust.omc)-length(Q_UC));         % ionospheric pseudo-observations are elevation-weighted
+    
+    Q_iono = diag(iono_var ./ P_fac(:));
+    Q = blkdiag(Q, Q_iono);
+    P = blkdiag(P, inv(Q_iono));
+end
+
 
 
 %% add Doppler parth

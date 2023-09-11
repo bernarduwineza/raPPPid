@@ -8,7 +8,7 @@ function [multiSats, multiData, multiObs, multiSetts] = stack_data4plot(paths, P
 %   PLOT        struct, containing booleans which plots are enabled
 % OUTPUT:
 %   satellites
-%	multiData   struct, stacked storeData´s from the files from paths
+%	multiData   struct, stacked storeDataï¿½s from the files from paths
 %   obs
 %   settings
 %
@@ -325,6 +325,11 @@ if PLOT.iono
     l_sto{end+1} = 'iono_est';
     l_sat{end+1} = 'obs';    
     l_sat{end+1} = 'elev';
+    l_sto{end+1} = 'C1';
+    l_sto{end+1} = 'C2';
+    l_sto{end+1} = 'L1';
+    l_sto{end+1} = 'L2';
+    
 end
 if PLOT.cs
     l_sto{end+1} = 'cs_pred_SF';

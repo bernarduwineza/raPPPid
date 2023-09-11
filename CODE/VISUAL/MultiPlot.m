@@ -20,6 +20,8 @@ function [] = MultiPlot(PATHS, XYZ_true, LABELS, PlotStruct)
 % create waitbar
 WBAR = waitbar(0, 'Creating Multi-Plot...', 'Name','Progress of creating Multi-Plot');
 
+set(0,'DefaultFigureWindowStyle','docked');
+
 % create some variables
 global STOP_CALC;   STOP_CALC = 0;
 unique_labels = unique(LABELS, 'stable');  	% existing labels, keep order

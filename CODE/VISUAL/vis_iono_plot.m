@@ -21,8 +21,8 @@ function [] = vis_iono_plot(settings, storeData, xaxis_label, hours, resets, boo
 
 
 %% Preparation
-bool_corr = strcmpi(settings.IONO.model,'Correct with ...')   ||   strcmpi(settings.IONO.model,'Estimate with ... as constraint');
-bool_est  = strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Estimate');
+bool_corr = strcmpi(settings.IONO.model,'Correct with ...')   ||   strcmpi(settings.IONO.model,'Estimate with ... as constraint') ||   strcmpi(settings.IONO.model,'Estimate VTEC');
+bool_est  = strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Estimate')  ||   strcmpi(settings.IONO.model,'Estimate VTEC');
 bool_fixed = settings.PLOT.fixed;
 
 % change default colors for plotting
@@ -39,10 +39,12 @@ isBDS = settings.INPUT.use_BDS;
 noGNSS = isGPS + isGLO + isGAL + isBDS;
 
 % satellite indices for each GNSS
-idx_gps = 001:000+DEF.SATS_GPS;
+% idx_gps = 001:000+DEF.SATS_GPS;
+idx_gps = 001:31;
 idx_glo = 101:100+DEF.SATS_GLO;
-idx_gal = 201:200+DEF.SATS_GAL;
-idx_bds = 301:size(bool_obs,2);
+idx_gal = 201:200+33;
+% idx_bds = 301:size(bool_obs,2);
+idx_bds = 301:length(storeData.iono_est(1,:));
 
 % boolean matrix for each GNSS, true if satellite in this epoch was observed
 gps_obs = bool_obs(:,idx_gps);
@@ -95,23 +97,27 @@ if bool_est
     end
     if isGPS
         iono_est_G = iono_est(:,idx_gps);
+        max_iono_corr = max(iono_corr_G(:)); 
         subplot(no_rows, noGNSS, i_plot);       i_plot=i_plot+1;
-        plotIonoEstimated(iono_est_G, hours, resets, gps_obs, 'GPS', xaxis_label, sol_str)
+        plotIonoEstimated(iono_est_G, hours, resets, gps_obs, 'GPS', xaxis_label, sol_str, max_iono_corr)
     end
     if isGLO
         iono_est_R = iono_est(:,idx_glo);
+        max_iono_corr = max(iono_corr_R(:)); 
         subplot(no_rows, noGNSS, i_plot);       i_plot=i_plot+1;
-        plotIonoEstimated(iono_est_R, hours, resets, glo_obs, 'Glonass', xaxis_label, sol_str)
+        plotIonoEstimated(iono_est_R, hours, resets, glo_obs, 'Glonass', xaxis_label, sol_str, max_iono_corr)
     end
     if isGAL
         iono_est_E = iono_est(:,idx_gal);
+        max_iono_corr = max(iono_corr_E(:)); 
         subplot(no_rows, noGNSS, i_plot);       i_plot=i_plot+1;
-        plotIonoEstimated(iono_est_E, hours, resets, gal_obs, 'Galileo', xaxis_label, sol_str)
+        plotIonoEstimated(iono_est_E, hours, resets, gal_obs, 'Galileo', xaxis_label, sol_str, max_iono_corr)
     end
     if isBDS
         iono_est_C = iono_est(:,idx_bds);
+        max_iono_corr = max(iono_corr_C(:)); 
         subplot(no_rows, noGNSS, i_plot);       i_plot=i_plot+1;
-        plotIonoEstimated(iono_est_C, hours, resets, bds_obs, 'BeiDou', xaxis_label, sol_str)
+        plotIonoEstimated(iono_est_C, hours, resets, bds_obs, 'BeiDou', xaxis_label, sol_str, max_iono_corr)
     end
 end
 
@@ -165,80 +171,79 @@ set(groot,'defaultAxesColorOrder',coleurs_default)
 end
 
 
-
 %% Auxiliary Functions
 % For plotting the modelled ionospheric delay
 function [] = plotIonoModelled(iono_corr, hours, resets, gnss_obs, gnss, xaxis_label)
-% check which prns have data
-prns = 1:size(gnss_obs,2);
-prns = prns(sum(gnss_obs,1) > 0);
-if isempty(prns); return; end
-% Plot
-iono_corr(iono_corr==0) = NaN;
-plot(hours, iono_corr(:,prns), 'Marker','.');
-% if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
-% create legend which datatooltip needs
-sys = gnss2char(gnss);
-prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
-hleg = legend(prns);
-title(hleg, 'PRN')
-legend off
-% style
-xlim([min(hours) max(hours)])
-ylim([0 max(iono_corr(:))])
-title(['Modeled range correction for ' gnss])
-ylabel('Range Correction [m]')
-Grid_Xoff_Yon();
-xlabel(xaxis_label)
+    % check which prns have data
+    prns = 1:size(gnss_obs,2);
+    prns = prns(sum(gnss_obs,1) > 0);
+    if isempty(prns); return; end
+    % Plot
+    iono_corr(iono_corr==0) = NaN;
+    plot(hours, iono_corr(:,prns), '.');
+    % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
+    % create legend which datatooltip needs
+    sys = gnss2char(gnss);
+    prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
+    hleg = legend(prns);
+    title(hleg, 'PRN')
+    % legend on
+    % style
+    xlim([min(hours) max(hours)])
+    ylim([0 max(iono_corr(:))])
+    title(['Modeled range correction for ' gnss])
+    ylabel('Range Correction [m]')
+    Grid_Xoff_Yon();
+    xlabel(xaxis_label)
 end
 
 % For plotting the estimated ionospheric delay
-function [] = plotIonoEstimated(iono_est, hours, resets, gnss_obs, gnss, xaxis_label, sol_str)
-% check which prns have data
-prns = 1:size(gnss_obs,2);
-prns = prns(sum(gnss_obs,1) > 0);
-if isempty(prns); return; end
-% Plot
-iono_est(iono_est==0) = NaN;
-plot(hours, iono_est(:,prns), 'Marker','.');
-% if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
-% create legend which datatooltip needs
-sys = gnss2char(gnss);
-prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
-hleg = legend(prns);
-title(hleg, 'PRN')
-legend off
-% style
-xlim([floor(hours(1)) hours(end)])
-ylim([0 max(iono_est(:))])
-title([sol_str ' iono delay estimation for ' gnss])
-ylabel('Ionospheric Delay [m]')
-Grid_Xoff_Yon();
-xlabel(xaxis_label)
+function [] = plotIonoEstimated(iono_est, hours, resets, gnss_obs, gnss, xaxis_label, sol_str, max_iono_corr)
+    % check which prns have data
+    prns = 1:size(gnss_obs,2);
+    prns = prns(sum(gnss_obs,1) > 0);
+    if isempty(prns); return; end
+    % Plot
+    iono_est(iono_est==0) = NaN;
+    plot(hours, iono_est(:,prns), '.');
+    % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
+    % create legend which datatooltip needs
+    sys = gnss2char(gnss);
+    prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
+    hleg = legend(prns);
+    title(hleg, 'PRN')
+    legend off
+    % style
+    xlim([floor(hours(1)) hours(end)])
+    ylim([0 max_iono_corr])
+    title([sol_str ' iono delay estimation for ' gnss])
+    ylabel('Ionospheric Delay [m]')
+    Grid_Xoff_Yon();
+    xlabel(xaxis_label)
 end
 
 % For plotting the difference between estimated and modelled ionospheric
 % delay
 function [] = plotIonoDiff(iono_diff, hours, resets, gnss_obs, gnss, xaxis_label)
-% check which prns have data
-prns = 1:size(gnss_obs,2);
-prns = prns(sum(gnss_obs,1) > 0);
-if isempty(prns); return; end
-% Plot
-plot(hours, iono_diff(:,prns), 'Marker','.');
-% if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
-% create legend which datatooltip needs
-sys = gnss2char(gnss);
-prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
-hleg = legend(prns);
-title(hleg, 'PRN')
-legend off
-% style
-xlim([floor(hours(1)) hours(end)])
-maxi = max(abs(iono_diff(:)));
-ylim([-maxi maxi])  
-title(['Estimated minus modelled for ' gnss])
-ylabel('Difference [m]')
-Grid_Xoff_Yon();
-xlabel(xaxis_label)
+    % check which prns have data
+    prns = 1:size(gnss_obs,2);
+    prns = prns(sum(gnss_obs,1) > 0);
+    if isempty(prns); return; end
+    % Plot
+    plot(hours, iono_diff(:,prns),'.');
+    % if ~isempty(resets); vline(resets, 'k:'); end	% plot vertical lines for resets
+    % create legend which datatooltip needs
+    sys = gnss2char(gnss);
+    prns = strcat(sys, num2str(mod(prns',100), '%02.0f'));      % for legend
+    hleg = legend(prns);
+    title(hleg, 'PRN')
+    legend off
+    % style
+    xlim([floor(hours(1)) hours(end)])
+    maxi = max(abs(iono_diff(:)));
+    ylim([-maxi maxi])  
+    title(['Estimated minus modelled for ' gnss])
+    ylabel('Difference [m]')
+    Grid_Xoff_Yon();
+    xlabel(xaxis_label)
 end

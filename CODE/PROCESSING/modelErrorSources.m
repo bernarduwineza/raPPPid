@@ -232,7 +232,7 @@ for i_sat = 1:num_sat
     %% Vectors, Angles, Distance between Receiver and Satellite
     
     % --- Azimuth, Elevation, zenith distance, cutoff-angle ---
-    [az, elev] = topocent(pos_XYZ,X_rot-pos_XYZ); 	% calculate azimuth and elevation [°]
+    [az, elev] = topocent(pos_XYZ,X_rot-pos_XYZ); 	% calculate azimuth and elevation [ï¿½]
     if elev < settings.PROC.elev_mask            	% elevation is under cut-off-angle
         exclude = true;                              % eliminate satellite
         status = 2;
@@ -416,12 +416,14 @@ for i_sat = 1:num_sat
     if ~Adjust.est_ZWD
         mfw = 0;
     end
-    
+
     
     
     %% Ionosphere
     iono(1:n_proc_frq) = 0;
-    if (strcmpi(settings.IONO.model, 'Estimate with ... as constraint') || strcmpi(settings.IONO.model, 'Correct with ...'))  && ~isnan(Ttr)
+    if (strcmpi(settings.IONO.model, 'Estimate with ... as constraint') ...
+            || strcmpi(settings.IONO.model, 'Correct with ...')  ...
+            || strcmpi(settings.IONO.model, 'Estimate VTEC') && ~isnan(Ttr))
         switch settings.IONO.source
             case 'IONEX File'
                 % calculate ionospheric correction from gim or klobuchar
@@ -539,7 +541,7 @@ for i_sat = 1:num_sat
     % --- Satellite Antenna Phase Center Correction ---
     % convert observation from Antenna Phase Center to Center of Mass which
     % is necessary when orbit/clock product refers to the CoM
-    % ||| check´n´change for not sp3
+    % ||| checkï¿½nï¿½change for not sp3
     dX_PCO_SAT_ECEF_corr = zeros(n_proc_frq,1);
     if settings.OTHER.bool_sat_pco && settings.ORBCLK.bool_sp3 	
         % satellite Phase Center Offset and precise ephemerides are enabled
@@ -609,8 +611,8 @@ for i_sat = 1:num_sat
     model.zwd(i_sat,frqs)  = zwd;               % zenith wet delay (need for building a priori + estimated zwd later)
     model.zhd(i_sat,frqs)  = zhd;               % modeled zenith hydrostativ delay
     % Observation direction
-    model.az(i_sat,frqs)   = az;                % Satellite azimuth [°]
-    model.el(i_sat,frqs)   = elev;            	% Satellite elevation [°]
+    model.az(i_sat,frqs)   = az;                % Satellite azimuth [ï¿½]
+    model.el(i_sat,frqs)   = elev;            	% Satellite elevation [ï¿½]
     % Windup
     model.delta_windup(i_sat,frqs) = delta_windup;          % Phase windup effect in cycles
     model.windup(i_sat,frqs)       = windupCorr(frqs);      % Phase windup effect, scaled to frequency

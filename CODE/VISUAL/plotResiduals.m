@@ -26,13 +26,30 @@ phase_residuals = [];
 if settings.PLOT.float
     solution_string = 'float';
     cutoff = settings.PROC.elev_mask;
+
     code_residuals  = full(storeData.residuals_code_1);
-    if n > 1; code_residuals(:,:,2) = full(storeData.residuals_code_2); end
-    if n > 2; code_residuals(:,:,3) = full(storeData.residuals_code_3); end
+    code_residuals_var = full(storeData.residuals_code_var_1); 
+    if n > 1
+        code_residuals(:,:,2) = full(storeData.residuals_code_2); 
+        code_residuals_var(:,:,2) = full(storeData.residuals_code_var_2); 
+    end
+    if n > 2
+        code_residuals(:,:,3) = full(storeData.residuals_code_3);
+        code_residuals_var(:,:,3) = full(storeData.residuals_code_var_3); 
+    end
+
     if strcmpi(settings.PROC.method,'Code + Phase')
         phase_residuals = full(storeData.residuals_phase_1);
-        if n > 1; phase_residuals(:,:,2) = full(storeData.residuals_phase_2); end
-        if n > 2; phase_residuals(:,:,3) = full(storeData.residuals_phase_3); end
+        phase_residuals_var = full(storeData.residuals_phase_var_1);
+
+        if n > 1
+            phase_residuals(:,:,2) = full(storeData.residuals_phase_2);
+            phase_residuals_var(:,:,2) = full(storeData.residuals_phase_var_2);
+        end
+        if n > 2
+            phase_residuals(:,:,3) = full(storeData.residuals_phase_3); 
+            phase_residuals_var(:,:,2) = full(storeData.residuals_phase_var_2);
+        end
     end
     
 elseif settings.PLOT.fixed
@@ -81,6 +98,9 @@ if n > 2; SNR_3 =  full(satellites.SNR_3); end
 code_residuals(code_residuals==0)   = NaN;
 phase_residuals(phase_residuals==0) = NaN;
 
+code_residuals_var(code_residuals_var==0)   = NaN;
+phase_residuals_var(phase_residuals_var==0) = NaN;
+
 
 %% create plots Residuals and Residuals over Elevation
 % % All GNSS
@@ -108,14 +128,17 @@ phase_residuals(phase_residuals==0) = NaN;
 if settings.INPUT.use_GPS
     % Extract data and replaces zeros with NaN
     Res_code_GPS = code_residuals(:, 1:DEF.SATS_GPS, :);
+    Res_code_var_GPS = code_residuals_var(:, 1:DEF.SATS_GPS, :);
     if strcmpi(settings.PROC.method,'Code + Phase')
         Res_phase_GPS = phase_residuals(:, 1:DEF.SATS_GPS, :);
+        Res_phase_var_GPS = code_residuals_var(:, 1:DEF.SATS_GPS, :);
         Res_phase_GPS(Res_phase_GPS==0) = NaN;
+        Res_phase_var_GPS(Res_phase_var_GPS==0) = NaN;
     end
     gps_prns = obs_prns(obs_prns<100);
     % Plot
     txtcell = {'GPS', 'G', solution_string};
-    vis_plotResiduals(epochs, reset_h, hours, label_x, Res_code_GPS, Res_phase_GPS, gps_prns, txtcell, elev(:,1:DEF.SATS_GPS), cutoff, rgb);
+    vis_plotResiduals(epochs, reset_h, hours, label_x, Res_code_GPS, Res_code_var_GPS, Res_phase_GPS, Res_phase_var_GPS, gps_prns, txtcell, elev(:,1:DEF.SATS_GPS), cutoff, rgb);
 end
 
 % Glonass
@@ -133,13 +156,15 @@ end
 % Galileo
 if settings.INPUT.use_GAL
     Res_code_GAL = code_residuals(:, 201:200+DEF.SATS_GAL, :);
+    Res_code_var_GAL = code_residuals(:, 201:200+DEF.SATS_GAL, :);
     if strcmpi(settings.PROC.method,'Code + Phase')
         Res_phase_GAL = phase_residuals(:, 201:200+DEF.SATS_GAL, :);
+        Res_phase_var_GAL = phase_residuals_var(:, 201:200+DEF.SATS_GAL, :);
     end
     gal_prns = obs_prns(obs_prns>200 & obs_prns<300);
     % Plot
     txtcell = {'Galileo', 'E', solution_string};
-    vis_plotResiduals(epochs, reset_h, hours, label_x, Res_code_GAL, Res_phase_GAL, gal_prns-200, txtcell, elev(:,201:(200+DEF.SATS_GAL)), cutoff, rgb);
+    vis_plotResiduals(epochs, reset_h, hours, label_x, Res_code_GAL, Res_code_var_GAL, Res_phase_GAL, Res_phase_var_GAL, gal_prns-200, txtcell, elev(:,201:(200+DEF.SATS_GAL)), cutoff, rgb);
 end
 
 % BeiDou

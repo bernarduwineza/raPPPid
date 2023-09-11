@@ -14,7 +14,7 @@ function [satellites, storeData, model_save] = ...
 %   Adjust          struct, contains adjustment-specific data
 %   model           struct, contains all modeled error-sources
 %   model_save      struct, collects all modeled errors from model
-%	HMW_12,...      matrix, Hatch-Melbourne-Wübbena LC observables
+%	HMW_12,...      matrix, Hatch-Melbourne-Wï¿½bbena LC observables
 % OUTPUT:
 %   satellites, storeData, model_save
 %                   updated with data of the current epoch
@@ -37,7 +37,7 @@ bool_float = Adjust.float;      % true if float position is achieved in current 
 %% satellite variables
 satellites.obs(q,prns)  = Epoch.tracked(prns);  	% save number of epochs satellite is tracked
 satellites.elev(q,prns) = model.el(:,1);	% save elevation of satellites
-satellites.az  (q,prns) = model.az(:,1); 	% save azimuth [°] of satellites
+satellites.az  (q,prns) = model.az(:,1); 	% save azimuth [ï¿½] of satellites
 satellites.status(q,prns) = Epoch.sat_status;
 
 % Save Signal-to-noise ratio
@@ -80,15 +80,29 @@ if strcmpi(settings.PROC.method,'Code + Phase')
 	phase_rows = 2:2:2*s_f;
 	temp_code_res  = reshape(Adjust.res(code_rows), 1, no_sats, proc_frqs);
 	temp_phase_res = reshape(Adjust.res(phase_rows), 1, no_sats, proc_frqs);
+
+    temp_code_res_var = reshape(diag(Adjust.res_var(code_rows,code_rows)), 1, no_sats, proc_frqs); 
+    temp_phase_res_var = reshape(diag(Adjust.res_var(phase_rows,code_rows)), 1, no_sats, proc_frqs); 
+
     storeData.residuals_code_1(q,prns) = temp_code_res(:,:,1);      
     storeData.residuals_phase_1(q,prns) = temp_phase_res(:,:,1);
+
+    storeData.residuals_code_var_1(q,prns) = temp_code_res_var(:,:,1); 
+    storeData.residuals_phase_var_1(q,prns) = temp_phase_res_var(:,:,1); 
+
     if proc_frqs > 1
         storeData.residuals_code_2(q,prns) = temp_code_res(:,:,2);
         storeData.residuals_phase_2(q,prns) = temp_phase_res(:,:,2);
+
+        storeData.residuals_code_var_2(q,prns) = temp_code_res_var(:,:,2); 
+        storeData.residuals_phase_var_2(q,prns) = temp_phase_res_var(:,:,2); 
     end
     if proc_frqs > 2
         storeData.residuals_code_3(q,prns) = temp_code_res(:,:,3);
         storeData.residuals_phase_3(q,prns) = temp_phase_res(:,:,3);
+
+        storeData.residuals_code_var_3(q,prns) = temp_code_res_var(:,:,3); 
+        storeData.residuals_phase_var_3(q,prns) = temp_phase_res_var(:,:,3); 
     end
     if settings.AMBFIX.bool_AMBFIX && Adjust.fixed
         % residuals from fixed solution
@@ -142,6 +156,32 @@ switch settings.IONO.model
         storeData.iono_corr(q,prns) = model.iono(:,1);
         % estimated ionospheric delay:
         storeData.iono_est(q,prns) = Adjust.param((numel_param-no_sats+1):numel_param);
+        if strcmp(settings.IONO.source, 'IONEX File')
+            % ionospheric mapping function and VTEC values
+            storeData.iono_mf(q,prns)   = model.iono_mf;
+            storeData.iono_vtec(q,prns) = model.iono_vtec;
+        end
+
+    case 'Estimate VTEC'
+        K = settings.IONO.Bspline.K; % number of B-spline coeffiients
+        storeData.constraint(q) = Adjust.constraint;
+        numel_param = numel(Adjust.param);
+
+        % estimated B-spline coeffients 
+        bspline_coeffs = Adjust.param((numel_param-K+1):numel_param);
+        %---DEBUG_CLK
+        bspline_coeffs = Adjust.param((NO_PARAM+s_f+1):NO_PARAM+s_f+K);
+        %---
+        storeData.bspline_coeff(q,:)= bspline_coeffs;
+
+        % latitudes and longitudes 
+        storeData.lat_pp(q, 1:no_sats) = Epoch.lat_pp; 
+        storeData.lon_pp(q, 1:no_sats) = Epoch.lon_pp; 
+        
+        % calculated ionospheric pseudo-observations:
+        storeData.iono_corr(q,prns) = model.iono(:,1);
+        % estimated ionospheric delay:
+        storeData.iono_est(q,prns) = Epoch.lat_lon_bases' * bspline_coeffs .* model.iono_mf*40.3e16/Const.GPS_F1^2;
         if strcmp(settings.IONO.source, 'IONEX File')
             % ionospheric mapping function and VTEC values
             storeData.iono_mf(q,prns)   = model.iono_mf;
@@ -211,7 +251,7 @@ if settings.AMBFIX.bool_AMBFIX
         storeData.N3_fixed(q,prns) = Adjust.N3_fixed;     % fixed ambiguity 3rd frequency
         storeData.iono_fixed(q,prns) = Adjust.iono_fix;   % fixed ionospheric delay estimation
     end
-    % save Hatch-Melbourne-Wübbena LCs
+    % save Hatch-Melbourne-Wï¿½bbena LCs
     storeData.HMW_12(q,prns) = HMW_12(q,prns);
     if proc_frqs >= 2
         storeData.HMW_23(q,prns) = HMW_23(q,prns);
@@ -267,6 +307,14 @@ end
 % store (co)variance information
 variances = diag(Adjust.param_sigma);
 storeData.param_var(q,:) = variances(1:NO_PARAM);
+
+
+%% Save clock drift data 
+%---DEBUG_CLK
+numel_param = numel(Adjust.param);
+storeData.clock_drift(q,1) = Adjust.param(numel_param,1);
+storeData.clock_drift_var(q,1) = variances(numel_param,1);
+%---
 
 % --- Quality Values ---
 A = Adjust.A;       % get Design-Matrix

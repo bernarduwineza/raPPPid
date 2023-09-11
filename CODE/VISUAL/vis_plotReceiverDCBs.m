@@ -187,9 +187,9 @@ function [rec_biases] = plot_true_DCBs(rec_biases, t, gnss_char, coleur, n_dcbs,
 % obs_G         observation types of GNSS
 dcb1 = [gnss_char obs_G.C1 obs_G.C2];
 dcb2 = [gnss_char obs_G.C1 obs_G.C3];
-style1 = [coleur, '-'];
+style1 = [coleur, '.'];
 style2 = [coleur, '--'];
-style1 = 'g-';
+style1 = 'g.';
 style2 = 'g--';
 if ~isfield(rec_biases, dcb1)         % try to build receiver dcb
     % ... with C1C (for GPS)
@@ -273,11 +273,11 @@ title(char2gnss(gnsschar))      % GNSS name
 function [leg_cell] = plot_DCBs(leg_cell, time, dcb1, dcb2, gnss_string, coleur, frqs, proc_signals)
 % DCB 1
 leg1 = [gnss_string ' DCB 1: ' proc_signals.C1 '-' proc_signals.C2];
-leg_cell = plotdcb(leg_cell, time, dcb1, leg1, [coleur, '-']);
+leg_cell = plotdcb(leg_cell, time, dcb1, leg1, [coleur, '.']);
 % DCB 2
 if frqs > 1
     leg2 = [gnss_string ' DCB 2: ' proc_signals.C1 '-' proc_signals.C3];
-    leg_cell = plotdcb(leg_cell, time, dcb2, leg2, [coleur, '--']);
+    leg_cell = plotdcb(leg_cell, time, dcb2, leg2, [coleur, '-.']);
 end
 
 % This function plots a single DCB

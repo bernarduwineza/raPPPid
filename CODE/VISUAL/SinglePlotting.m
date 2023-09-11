@@ -281,10 +281,15 @@ if STOP_CALC; return; end
 
 %     -+-+-+-+- Figures: Ionospheric Correction Plot  -+-+-+-+-
 if settings.PLOT.iono
-    if strcmpi(settings.IONO.model,'Correct with ...')   ||   strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Estimate')
+    if strcmpi(settings.IONO.model,'Correct with ...') || ...
+            strcmpi(settings.IONO.model,'Estimate with ... as constraint') || ...
+            strcmpi(settings.IONO.model,'Estimate') || ...
+            strcmpi(settings.IONO.model,'Estimate VTEC')
         obs_bool = logical(full(satellites.obs));
         vis_iono_plot(settings, storeData, label_x_h, hours, reset_h, obs_bool, rgb);
-        vis_ionodiff_histo(settings, storeData, obs_bool, full(satellites.elev));
+        % vis_ionodiff_histo(settings, storeData, obs_bool, full(satellites.elev));
+
+        % vis_iono_comparison_plot(settings, storeData, label_x_h, hours, reset_h, obs_bool, rgb);
     else
         fprintf('No Ionosphere correction was used.\n');
     end

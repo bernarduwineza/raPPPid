@@ -50,4 +50,13 @@ if ~strcmp(filtersetts.ADJ.filter.type,'No Filter')			% Filter is enabled
     set(handles.edit_filter_iono_sigma0,        'String', num2str(sqrt(filtersetts.ADJ.filter.var_iono)) );
     set(handles.edit_filter_iono_Q,             'String', num2str(sqrt(filtersetts.ADJ.filter.Q_iono)) );
     set(handles.popupmenu_filter_iono_dynmodel, 'Value', filtersetts.ADJ.filter.dynmodel_iono+1);
+
+    % Ionospheric VTEC
+    try
+        set(handles.edit_filter_iono_vtec_sigma0,        'String', num2str(sqrt(filtersetts.ADJ.filter.var_iono_vtec)) );
+        set(handles.edit_filter_iono_vtec_Q,             'String', num2str(sqrt(filtersetts.ADJ.filter.Q_iono_vtec)) );
+        set(handles.popupmenu_filter_iono_vtec_dynmodel, 'Value', filtersetts.ADJ.filter.dynmodel_iono_vtec+1);
+    catch 
+        % do nothing
+    end 
 end

@@ -1,7 +1,6 @@
 function [AgentData] = InitializeAgentProcessing(settings)
 
     %% -+-+-+-+-+-PREPARATIONS-+-+-+-+-+-
-AgentData.settigs = settings;
 % Create path of results folder, the folder itself is created after the processing
 if exist('settings', 'var')     % PPP_main.m started from GUI or with settings as input
     settings.PROC.output_dir = createResultsFolder(settings.INPUT.file_obs, settings.PROC.name);
@@ -126,5 +125,3 @@ end
 
 % Create agent data struct containing Epoch, satellites, storeData, obs, model_save, Adjust, settings
 AgentData.settings          = settings;
-
-

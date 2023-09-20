@@ -1,21 +1,21 @@
 function valid_settings = checkProcessingSettings(settings, prebatch)
-% This function checks if the settings from the GUI are valid for the 
+% This function checks if the settings from the GUI are valid for the
 % processing. If something is wrong it throws an error message and the
 % processing will not be started
-% 
+%
 % INPUT:
 %   settings        struct, settings for processing from GUI
-%   prebatch        boolean, set to true if check should be performed 
+%   prebatch        boolean, set to true if check should be performed
 %                       ONLY before batch processing or false if check
 %                       should not be performed before batch processing
 %                       (e.g., number of frequencies)
 %
 % OUTPUT:
 %   valid_settings  boolean, false if processing can not be started
-% 
+%
 % Revision:
 %   ...
-% 
+%
 % This function belongs to raPPPid, Copyright (c) 2023, M.F. Glaner
 % *************************************************************************
 
@@ -125,7 +125,7 @@ end
 
 
 %% Check if frequencies == OFF are at the end
-if num_freq ~= 3        
+if num_freq ~= 3
     % this check is only necessary of less than 3 frequencies are processed
     if GPS_on
         off_idx_G = strcmpi(proc_frqs_gps, 'OFF');
@@ -170,7 +170,7 @@ if num_freq ~= 3
             errordlg({'Check order of processed BeiDou frequencies!', 'Disabled frequencies should be at the end.'}, windowname);
             valid_settings = false; return
         end
-    end    
+    end
 end
 
 
@@ -178,7 +178,7 @@ end
 %% Check for errors
 
 % Start and end of processing time span do not fit together or start is not valid
-if settings.PROC.timeFrame(1) >= settings.PROC.timeFrame(2) 
+if settings.PROC.timeFrame(1) >= settings.PROC.timeFrame(2)
     errordlg('Check settings of epochs!', windowname);
     valid_settings = false; return
 end
@@ -200,7 +200,7 @@ if ~GPS_on && ~GLO_on && ~GAL_on && ~BDS_on && ~prebatch
 end
 
 
-% No manually selected IONEX file 
+% No manually selected IONEX file
 if strcmpi(settings.IONO.model,'Estimate with ... as constraint') || strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
     if strcmpi(settings.IONO.model_ionex,'manually') && isempty(settings.IONO.file_ionex)
         errordlg('Please select an IONEX-File!', windowname);
@@ -332,8 +332,13 @@ end
 % check for errors related to estimation of receiver DCBs
 if settings.BIASES.estimate_rec_dcbs && ~prebatch
     if num_freq == 1
-        errordlg({'Only 1-Frequency is processed:', 'Please disable estimation of Receiver DCBs!'}, windowname);
-        valid_settings = false; return
+        if settings.INPUT.bool_batch
+            settings.BIASES.estimate_rec_dcb = 0;
+        else
+            errordlg({'Only 1-Frequency is processed:', 'Please disable estimation of Receiver DCBs!'}, windowname);
+            valid_settings = false;
+            return
+        end
     end
     if num_freq == 2 && strcmp(settings.IONO.model,'2-Frequency-IF-LCs')
         errordlg({'Only one 2-Frequency-IF-LC is processed:', 'Please disable estimation of Receiver DCBs!'}, windowname);
@@ -481,7 +486,7 @@ end
 % check if elevation weighting function is valid
 if settings.ADJ.weight_elev
     % check if conversion was successful with elev = 45°
-    try 
+    try
         settings.ADJ.elev_weight_fun([pi/4 pi/5]);
     catch
         errordlg({'Please check the elevation weighting function!', 'To allow elementwise operations, use "."'}, windowname)
@@ -540,7 +545,7 @@ end
 
 % NeQuick model is implemented, but absurdly slow and not tested
 if (strcmpi(settings.IONO.model,'Estimate with ... as constraint')   ||   strcmpi(settings.IONO.model,'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')) ...
-        && strcmpi(settings.IONO.source,'NeQuick model')  
+        && strcmpi(settings.IONO.source,'NeQuick model')
     errordlg({'NeQuick is implemented but absurdly slow.', 'Use another ionosphere model!'}, windowname)
     valid_settings = false; return
 end
@@ -552,7 +557,7 @@ end
 
 % Galileo HAS does not provide phase biases (yet)
 if contains(settings.PROC.method, 'Phase') && settings.ORBCLK.bool_brdc && strcmp(settings.ORBCLK.CorrectionStream, 'manually') && ...
-    contains(settings.ORBCLK.file_corr2brdc, 'SSRA00EUH0') && strcmp(settings.BIASES.phase, 'Correction Stream')
+        contains(settings.ORBCLK.file_corr2brdc, 'SSRA00EUH0') && strcmp(settings.BIASES.phase, 'Correction Stream')
     errordlg({'Galileo HAS does not provide phase biases (yet).', 'Set phase biases to off!'}, windowname)
     valid_settings = false; return
 end
@@ -640,251 +645,255 @@ end
 if num_freq == 1 && ~prebatch
     % Cycle Slip Detection with dL1-dL2-difference is not possible
     if settings.OTHER.CS.DF && contains(settings.PROC.method, 'Phase')
-        errordlg({'Only 1-Frequency is processed:', 'Cycle-Slip Detection dL1-dL2 is not possible!'}, windowname);
-        valid_settings = false; return
+        if settings.INPUT.bool_batch
+            settings.OTHER.CS.DF = 0;
+            settings.OTHER.CS.Doppler = 1;
+        else
+            errordlg({'Only 1-Frequency is processed:', 'Cycle-Slip Detection dL1-dL2 is not possible!'}, windowname);
+            valid_settings = false; return
+        end
+        if strcmp(settings.IONO.model,'2-Frequency-IF-LCs')
+            errordlg({'Only 1-Frequency is processed:', 'Processing with 2-Frequency-IF-LC is not possible!'}, windowname);
+            valid_settings = false; return
+        end
+        % 2-Frequency-IF-LC is not possible with only one frequency
+        if strcmp(settings.IONO.model,'2-Frequency-IF-LCs')
+            errordlg('Not enough frequencies selected for building the 2-Frequency-IF-LC!', windowname);
+            valid_settings = false; return
+        end
+        % observation weighting with the MP LC is not possible for single
+        % frequency processing
+        if settings.ADJ.weight_mplc
+            errordlg('The selected observation weighting method is not possible for processing a single frequency!', windowname);
+            valid_settings = false; return
+        end
     end
-    if strcmp(settings.IONO.model,'2-Frequency-IF-LCs')
-        errordlg({'Only 1-Frequency is processed:', 'Processing with 2-Frequency-IF-LC is not possible!'}, windowname);
-        valid_settings = false; return
-    end    
-    % 2-Frequency-IF-LC is not possible with only one frequency
-    if strcmp(settings.IONO.model,'2-Frequency-IF-LCs')
-        errordlg('Not enough frequencies selected for building the 2-Frequency-IF-LC!', windowname);
-        valid_settings = false; return
+    % 2 or 3 Frequencies are processed
+    if (num_freq == 2 || num_freq == 3) && ~prebatch
+        if settings.OTHER.CS.l1c1
+            errordlg('Cycle-Slip Detection with L1-C1 Difference only implemented for Single-Frequency-Processing.', windowname);
+            valid_settings = false; return
+        end
     end
-    % observation weighting with the MP LC is not possible for single
-    % frequency processing
-    if settings.ADJ.weight_mplc
-        errordlg('The selected observation weighting method is not possible for processing a single frequency!', windowname);
-        valid_settings = false; return
-    end
-end
-% 2 or 3 Frequencies are processed
-if (num_freq == 2 || num_freq == 3) && ~prebatch
-    if settings.OTHER.CS.l1c1
-        errordlg('Cycle-Slip Detection with L1-C1 Difference only implemented for Single-Frequency-Processing.', windowname);
-        valid_settings = false; return
-    end
-end
-% 3 Frequency-Processing
-if num_freq == 3 && ~prebatch
-    % CODE DCBs are only for two frequencies
-    if strcmp(settings.BIASES.code, 'CODE DCBs (P1P2, P1C1, P2C2)')
-        errordlg('CODE DCBs are only for two frequencies of GPS+GLO !', windowname);
-        valid_settings = false;     return;
-    end
-    
-end
-
-
-%% Error concerning PPP-AR
-if settings.AMBFIX.bool_AMBFIX
-    % PPP-AR is not possible if no phase is processed
-    if ~contains(settings.PROC.method, 'Phase')
-        errordlg('PPP-AR is not possible without processing phase observations!', windowname);
-        valid_settings = false; return
+    % 3 Frequency-Processing
+    if num_freq == 3 && ~prebatch
+        % CODE DCBs are only for two frequencies
+        if strcmp(settings.BIASES.code, 'CODE DCBs (P1P2, P1C1, P2C2)')
+            errordlg('CODE DCBs are only for two frequencies of GPS+GLO !', windowname);
+            valid_settings = false;     return;
+        end
+        
     end
     
-    % PPP-AR is not implemented for 3-Frequency-IF-LC only
-    if strcmp(settings.IONO.model,'3-Frequency-IF-LC')
-        errordlg('PPP-AR is not implemented for 3-Frequency-IF-LC!', windowname);
-        valid_settings = false; return
-    end
     
-    % For PPP-AR EW has to start before WL-Fixing and WL before NL-Fixing
-    if settings.AMBFIX.start_WL_sec > settings.AMBFIX.start_NL_sec
-        errordlg({'Check settings for start of fixing!' 'EW has to start before WL-Fixing and WL before NL-Fixing.'}, windowname);
-        valid_settings = false; return
-    end
-    
-    % PPP-AR and phase is not processed
-    if ~strcmp(settings.PROC.method, 'Code + Phase')
-        errordlg('PPP-AR without Phase Observations is not possible!', windowname);
-        valid_settings = false; return
-    end
-    
-    % CNES integer recovery clock PPP-AR (for GPS and Galileo) might need CODE MGEX biases
-    if settings.ORBCLK.bool_precise && ~strcmp(settings.BIASES.phase, 'SGG FCBs') && ...
-            strcmp(settings.ORBCLK.prec_prod, 'CNES') && ~strcmp(settings.BIASES.code, 'CODE MGEX')
-        msgbox('CNES integer recovery clock approach might need CODE MGEX biases!', windowname);
-    end
-    
-    %     % CNES postprocessed biases need GFZ orbits and clocks
-    %     if settings.ORBCLK.bool_precise && strcmp(settings.BIASES.code, 'CNES postprocessed')&& ~strcmp(settings.ORBCLK.prec_prod, 'GFZ')
-    %         errordlg('CNES postprocessed biases need GFZ orbit and clock products!', windowname);
-    %         valid_settings = false; return
-    %     end
-    
-    % CNES started providing postprocessed product in an archive containing
-    % all necessary files.
-    if strcmp(settings.BIASES.code, 'CNES postprocessed')
-        errordlg({'CNES now provides post-processed products as an archive!', 'Download that archive, extract it, and manually select the files.', 'Try the link in command window.'}, windowname);
-        fprintf(['\nhttp://www.ppp-wizard.net/products/POST_PROCESSED/post_' sprintf('%04.0f', yyyy) sprintf('%03.0f', doy) '.tgz\n\n'])
-        valid_settings = false; return
-    end
-
-
-    % CODE MGEX needs its own ANTEX file
-    if ~strcmp(settings.BIASES.phase, 'SGG FCBs') && settings.ORBCLK.bool_precise && prec_prod_CODE_MGEX 
-        if ~strcmp(settings.OTHER.antex, 'Manual choice:')
-            % [IGS-MGEX] CODE MGEX switch from IGb14 to IGS14R3 (starting from GPS week 2156)
-            % However, this seems not totally true...
-            if gpsweek >= 2156
-                errordlg({'PPP-AR with CODE MGEX needs ', 'its own ANTEX File: Please select M20.ATX!'}, windowname);
-                valid_settings = false; return
-            else
-                errordlg({'PPP-AR with CODE MGEX needs ', 'its own ANTEX File: Please select M14.ATX!'}, windowname);
-                valid_settings = false; return
+    %% Error concerning PPP-AR
+    if settings.AMBFIX.bool_AMBFIX
+        % PPP-AR is not possible if no phase is processed
+        if ~contains(settings.PROC.method, 'Phase')
+            errordlg('PPP-AR is not possible without processing phase observations!', windowname);
+            valid_settings = false; return
+        end
+        
+        % PPP-AR is not implemented for 3-Frequency-IF-LC only
+        if strcmp(settings.IONO.model,'3-Frequency-IF-LC')
+            errordlg('PPP-AR is not implemented for 3-Frequency-IF-LC!', windowname);
+            valid_settings = false; return
+        end
+        
+        % For PPP-AR EW has to start before WL-Fixing and WL before NL-Fixing
+        if settings.AMBFIX.start_WL_sec > settings.AMBFIX.start_NL_sec
+            errordlg({'Check settings for start of fixing!' 'EW has to start before WL-Fixing and WL before NL-Fixing.'}, windowname);
+            valid_settings = false; return
+        end
+        
+        % PPP-AR and phase is not processed
+        if ~strcmp(settings.PROC.method, 'Code + Phase')
+            errordlg('PPP-AR without Phase Observations is not possible!', windowname);
+            valid_settings = false; return
+        end
+        
+        % CNES integer recovery clock PPP-AR (for GPS and Galileo) might need CODE MGEX biases
+        if settings.ORBCLK.bool_precise && ~strcmp(settings.BIASES.phase, 'SGG FCBs') && ...
+                strcmp(settings.ORBCLK.prec_prod, 'CNES') && ~strcmp(settings.BIASES.code, 'CODE MGEX')
+            msgbox('CNES integer recovery clock approach might need CODE MGEX biases!', windowname);
+        end
+        
+        %     % CNES postprocessed biases need GFZ orbits and clocks
+        %     if settings.ORBCLK.bool_precise && strcmp(settings.BIASES.code, 'CNES postprocessed')&& ~strcmp(settings.ORBCLK.prec_prod, 'GFZ')
+        %         errordlg('CNES postprocessed biases need GFZ orbit and clock products!', windowname);
+        %         valid_settings = false; return
+        %     end
+        
+        % CNES started providing postprocessed product in an archive containing
+        % all necessary files.
+        if strcmp(settings.BIASES.code, 'CNES postprocessed')
+            errordlg({'CNES now provides post-processed products as an archive!', 'Download that archive, extract it, and manually select the files.', 'Try the link in command window.'}, windowname);
+            fprintf(['\nhttp://www.ppp-wizard.net/products/POST_PROCESSED/post_' sprintf('%04.0f', yyyy) sprintf('%03.0f', doy) '.tgz\n\n'])
+            valid_settings = false; return
+        end
+        
+        
+        % CODE MGEX needs its own ANTEX file
+        if ~strcmp(settings.BIASES.phase, 'SGG FCBs') && settings.ORBCLK.bool_precise && prec_prod_CODE_MGEX
+            if ~strcmp(settings.OTHER.antex, 'Manual choice:')
+                % [IGS-MGEX] CODE MGEX switch from IGb14 to IGS14R3 (starting from GPS week 2156)
+                % However, this seems not totally true...
+                if gpsweek >= 2156
+                    errordlg({'PPP-AR with CODE MGEX needs ', 'its own ANTEX File: Please select M20.ATX!'}, windowname);
+                    valid_settings = false; return
+                else
+                    errordlg({'PPP-AR with CODE MGEX needs ', 'its own ANTEX File: Please select M14.ATX!'}, windowname);
+                    valid_settings = false; return
+                end
             end
         end
+        
+        % PPP-AR is not implemented for Glonass only (just in addition to other GNSS)
+        if GLO_on && ~GPS_on && ~GAL_on && ~BDS_on
+            errordlg({'PPP-AR is not possible for Glonass only!'}, windowname);
+            valid_settings = false; return
+        end
+        
+        % PPP-AR is not possible for mGNSS biases from CAS or DLR
+        if contains(settings.BIASES.code, 'CAS Multi-GNSS') || strcmp(settings.BIASES.code, 'DLR Multi-GNSS DCBs')
+            errordlg({'The selected code biases are not suitable for PPP-AR:', settings.BIASES.code}, windowname);
+            valid_settings = false; return
+        end
+        
     end
     
-    % PPP-AR is not implemented for Glonass only (just in addition to other GNSS)
-    if GLO_on && ~GPS_on && ~GAL_on && ~BDS_on
-        errordlg({'PPP-AR is not possible for Glonass only!'}, windowname);
-        valid_settings = false; return
+    
+    %% Check if all file-paths are correct and the needed files are existing
+    
+    % Observation File
+    if ~prebatch
+        valid_settings = checkFileExistence(settings.INPUT.file_obs, 'RINEX Observation File', valid_settings);
     end
     
-    % PPP-AR is not possible for mGNSS biases from CAS or DLR
-    if contains(settings.BIASES.code, 'CAS Multi-GNSS') || strcmp(settings.BIASES.code, 'DLR Multi-GNSS DCBs')
-        errordlg({'The selected code biases are not suitable for PPP-AR:', settings.BIASES.code}, windowname);
-        valid_settings = false; return
+    % Orbits and Clocks
+    if settings.ORBCLK.bool_precise         % precise products
+        if strcmp(settings.ORBCLK.prec_prod, 'manually')
+            valid_settings = checkFileExistence(settings.ORBCLK.file_sp3, 'Precise Orbit (*.sp3) File', valid_settings);
+        end
+    elseif settings.ORBCLK.bool_brdc   % broadcast products
+        if settings.ORBCLK.bool_nav_multi && strcmp(settings.ORBCLK.multi_nav, 'manually')
+            valid_settings = checkFileExistence(settings.ORBCLK.file_nav_multi, ' Multi-GNSS Navigation File', valid_settings);
+        end
+        if settings.ORBCLK.bool_nav_single
+            if GPS_on
+                valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GPS, 'GPS Navigation File', valid_settings);
+            end
+            if GLO_on
+                valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GLO, 'Glonass Navigation File', valid_settings);
+            end
+            if GAL_on
+                valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GAL, 'Galileo File', valid_settings);
+            end
+        end
+        if strcmp(settings.ORBCLK.CorrectionStream, 'manually')
+            valid_settings = checkFileExistence(settings.ORBCLK.file_corr2brdc, 'Correction Stream File', valid_settings);
+        end
     end
+    
+    % Tropo file
+    if strcmp(settings.TROPO.zhd, 'Tropo file') || strcmp(settings.TROPO.zwd, 'Tropo file')
+        if strcmp(settings.TROPO.tropo_file, 'manually')
+            valid_settings = checkFileExistence(settings.TROPO.tropo_filepath, 'Tropo File', valid_settings);
+        end
+    end
+    
+    % Ionosphere
+    if strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmp(settings.IONO.model, 'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
+        if strcmp(settings.IONO.source, 'IONEX File') && strcmp(settings.IONO.model_ionex, 'manually:')
+            valid_settings = checkFileExistence(settings.IONO.file_ionex, 'IONEX File', valid_settings);
+        end
+    end
+    
+    % Biases
+    if strcmp(settings.BIASES.code, 'manually')
+        if settings.BIASES.code_manually_DCBs_bool
+            valid_settings = checkFileExistence(settings.BIASES.code_file{1}, 'P1P2 DCB File', valid_settings);
+            valid_settings = checkFileExistence(settings.BIASES.code_file{2}, 'P1C1 DCB File', valid_settings);
+        elseif settings.BIASES.code_manually_Sinex_bool
+            valid_settings = checkFileExistence(settings.BIASES.code_file, 'Sinex Bias File', valid_settings);
+        end
+    end
+    
+    % Manual selection of ANTEX File
+    if strcmp(settings.OTHER.antex,'Manual choice:')
+        if isempty(settings.OTHER.file_antex)
+            errordlg({'Manual choice of ANTEX file:', 'Please select a file!'}, windowname);
+            valid_settings = false;
+        else
+            valid_settings = checkFileExistence(settings.OTHER.file_antex, 'manual ANTEX File', valid_settings);
+        end
+    end
+    
+    
+    
+    
+    
+    
+    %% Message Boxes
+    
+    % Print out information if no cycle-slip detection method is enabled
+    if ~settings.OTHER.CS.TimeDifference && ~settings.OTHER.CS.l1c1 && ~settings.OTHER.CS.DF && ~settings.OTHER.CS.Doppler && strcmp(settings.PROC.method, 'Code + Phase')
+        msgbox('Be careful: All cycle-slip detection methods are disabled!', 'Cycle-Slip-Detection', 'help')
+    end
+    
+    % Intervall is (maybe?) too long for Cycle-Slip Detection with Doppler
+    if ~prebatch && ~isempty(rheader.interval) && rheader.interval > 5 && settings.OTHER.CS.Doppler
+        msgbox('Be careful: Observation intervall may be too long for Cycle-Slip-Detection with Doppler!', 'Cycle-Slip-Detection', 'help')
+    end
+    
+    % Reprocessed TUG products need their corresponding antex file
+    if settings.ORBCLK.bool_precise && strcmp(settings.ORBCLK.prec_prod, 'manually') && contains(settings.ORBCLK.file_sp3, 'TUG') && ~strcmp(settings.OTHER.antex, 'Manual choice:')
+        msgbox('You should use the corresponding ANTEX-File!', 'ANTEX-File', 'help')
+    end
+    
+    % Broadcasted Time Group Delays make only sense with broadcast orbits and
+    % clocks
+    if settings.ORBCLK.bool_precise && strcmp(settings.BIASES.code, 'Broadcasted TGD')
+        msgbox({'Processing precise orbits and clocks with broadcasted TGD:','Precise products should make use of precise biases!'}, 'Think about it!', 'help')
+    end
+    
+    % Batch processing and manually selected for only one day selected orbits,
+    % clocks or biases. This could lead to errors if observation files from
+    % multiple days are processd
+    if prebatch
+        if settings.ORBCLK.bool_precise && strcmp(settings.ORBCLK.prec_prod, 'manually') ...
+                && (~contains(settings.ORBCLK.file_sp3, '$') || ~contains(settings.ORBCLK.file_clk, '$'))
+            msgbox({'Batch processing and manual selected satellite orbit & clocks:','File(s) only for one day defined, be careful!'}, 'Potential error', 'help')
+        end
+        if settings.BIASES.code_manually_Sinex_bool && ~contains(settings.BIASES.code_file, '$')
+            msgbox({'Batch processing and manually selected biases:','File only for one day defined, be careful!'}, 'Potential error', 'help')
+        end
+    end
+    
+    % CODE MGEX PPP-AR for Galileo needs its own ANTEX file
+    if GAL_on && settings.ORBCLK.bool_precise && prec_prod_CODE_MGEX && ~strcmp(settings.OTHER.antex, 'Manual choice:') && ~strcmp(settings.BIASES.phase, 'SGG FCBs')
+        msgbox({'Galileo with CODE MGEX performs better with ', 'its own ANTEX File: Please select M14.ATX!'}, windowname);
+    end
+    
+    % check if RINEX files continues over day boundary
+    if ~prebatch && ~isempty(rheader.first_obs) && ~isempty(rheader.last_obs)
+        if ~all(rheader.first_obs(1:3) == rheader.last_obs(1:3))
+            msgbox({'Be careful: RINEX file contains observation of multiple days.', 'Processing over the day boundary might fail!'}, windowname);
+        end
+    end
+    
+    
+    
+    
+    %%
+    % ||| check if processed frequencies are in ascending order!?!?!?
+    
+    
     
 end
 
 
-%% Check if all file-paths are correct and the needed files are existing
-
-% Observation File
-if ~prebatch
-    valid_settings = checkFileExistence(settings.INPUT.file_obs, 'RINEX Observation File', valid_settings);
 end
-
-% Orbits and Clocks
-if settings.ORBCLK.bool_precise         % precise products
-    if strcmp(settings.ORBCLK.prec_prod, 'manually')
-        valid_settings = checkFileExistence(settings.ORBCLK.file_sp3, 'Precise Orbit (*.sp3) File', valid_settings);
-    end
-elseif settings.ORBCLK.bool_brdc   % broadcast products
-    if settings.ORBCLK.bool_nav_multi && strcmp(settings.ORBCLK.multi_nav, 'manually')
-        valid_settings = checkFileExistence(settings.ORBCLK.file_nav_multi, ' Multi-GNSS Navigation File', valid_settings);
-    end
-    if settings.ORBCLK.bool_nav_single
-        if GPS_on
-            valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GPS, 'GPS Navigation File', valid_settings);
-        end
-        if GLO_on
-            valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GLO, 'Glonass Navigation File', valid_settings);
-        end
-        if GAL_on
-            valid_settings = checkFileExistence(settings.ORBCLK.file_nav_GAL, 'Galileo File', valid_settings);
-        end
-    end
-    if strcmp(settings.ORBCLK.CorrectionStream, 'manually')
-        valid_settings = checkFileExistence(settings.ORBCLK.file_corr2brdc, 'Correction Stream File', valid_settings);
-    end
-end
-
-% Tropo file
-if strcmp(settings.TROPO.zhd, 'Tropo file') || strcmp(settings.TROPO.zwd, 'Tropo file')
-    if strcmp(settings.TROPO.tropo_file, 'manually')
-        valid_settings = checkFileExistence(settings.TROPO.tropo_filepath, 'Tropo File', valid_settings);
-    end
-end
-
-% Ionosphere
-if strcmp(settings.IONO.model, 'Estimate with ... as constraint') || strcmp(settings.IONO.model, 'Correct with ...') || strcmpi(settings.IONO.model,'Estimate VTEC')
-    if strcmp(settings.IONO.source, 'IONEX File') && strcmp(settings.IONO.model_ionex, 'manually:')
-        valid_settings = checkFileExistence(settings.IONO.file_ionex, 'IONEX File', valid_settings);
-    end
-end
-
-% Biases
-if strcmp(settings.BIASES.code, 'manually')
-    if settings.BIASES.code_manually_DCBs_bool
-        valid_settings = checkFileExistence(settings.BIASES.code_file{1}, 'P1P2 DCB File', valid_settings);
-        valid_settings = checkFileExistence(settings.BIASES.code_file{2}, 'P1C1 DCB File', valid_settings);
-    elseif settings.BIASES.code_manually_Sinex_bool
-        valid_settings = checkFileExistence(settings.BIASES.code_file, 'Sinex Bias File', valid_settings);
-    end
-end
-
-% Manual selection of ANTEX File
-if strcmp(settings.OTHER.antex,'Manual choice:')
-    if isempty(settings.OTHER.file_antex)
-        errordlg({'Manual choice of ANTEX file:', 'Please select a file!'}, windowname);
-        valid_settings = false;
-    else
-        valid_settings = checkFileExistence(settings.OTHER.file_antex, 'manual ANTEX File', valid_settings);
-    end
-end
-
-
-
-
-
-
-%% Message Boxes
-
-% Print out information if no cycle-slip detection method is enabled
-if ~settings.OTHER.CS.TimeDifference && ~settings.OTHER.CS.l1c1 && ~settings.OTHER.CS.DF && ~settings.OTHER.CS.Doppler && strcmp(settings.PROC.method, 'Code + Phase')
-    msgbox('Be careful: All cycle-slip detection methods are disabled!', 'Cycle-Slip-Detection', 'help')
-end
-
-% Intervall is (maybe?) too long for Cycle-Slip Detection with Doppler
-if ~prebatch && ~isempty(rheader.interval) && rheader.interval > 5 && settings.OTHER.CS.Doppler  
-    msgbox('Be careful: Observation intervall may be too long for Cycle-Slip-Detection with Doppler!', 'Cycle-Slip-Detection', 'help')
-end
-
-% Reprocessed TUG products need their corresponding antex file
-if settings.ORBCLK.bool_precise && strcmp(settings.ORBCLK.prec_prod, 'manually') && contains(settings.ORBCLK.file_sp3, 'TUG') && ~strcmp(settings.OTHER.antex, 'Manual choice:')
-    msgbox('You should use the corresponding ANTEX-File!', 'ANTEX-File', 'help')
-end
-
-% Broadcasted Time Group Delays make only sense with broadcast orbits and
-% clocks
-if settings.ORBCLK.bool_precise && strcmp(settings.BIASES.code, 'Broadcasted TGD')
-    msgbox({'Processing precise orbits and clocks with broadcasted TGD:','Precise products should make use of precise biases!'}, 'Think about it!', 'help')
-end
-
-% Batch processing and manually selected for only one day selected orbits, 
-% clocks or biases. This could lead to errors if observation files from
-% multiple days are processd
-if prebatch
-    if settings.ORBCLK.bool_precise && strcmp(settings.ORBCLK.prec_prod, 'manually') ...
-            && (~contains(settings.ORBCLK.file_sp3, '$') || ~contains(settings.ORBCLK.file_clk, '$'))
-        msgbox({'Batch processing and manual selected satellite orbit & clocks:','File(s) only for one day defined, be careful!'}, 'Potential error', 'help')
-    end
-    if settings.BIASES.code_manually_Sinex_bool && ~contains(settings.BIASES.code_file, '$')
-        msgbox({'Batch processing and manually selected biases:','File only for one day defined, be careful!'}, 'Potential error', 'help')        
-    end    
-end
-
-% CODE MGEX PPP-AR for Galileo needs its own ANTEX file
-if GAL_on && settings.ORBCLK.bool_precise && prec_prod_CODE_MGEX && ~strcmp(settings.OTHER.antex, 'Manual choice:') && ~strcmp(settings.BIASES.phase, 'SGG FCBs')
-    msgbox({'Galileo with CODE MGEX performs better with ', 'its own ANTEX File: Please select M14.ATX!'}, windowname);
-end
-
-% check if RINEX files continues over day boundary
-if ~prebatch && ~isempty(rheader.first_obs) && ~isempty(rheader.last_obs)
-    if ~all(rheader.first_obs(1:3) == rheader.last_obs(1:3))
-        msgbox({'Be careful: RINEX file contains observation of multiple days.', 'Processing over the day boundary might fail!'}, windowname);
-    end
-end
-
-
-
-
-%%
-% ||| check if processed frequencies are in ascending order!?!?!?
-
-
-
-end
-
-
-
 
 
 %% Auxiliary Functions

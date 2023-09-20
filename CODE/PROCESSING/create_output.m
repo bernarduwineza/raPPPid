@@ -244,8 +244,10 @@ end
 if settings.EXP.kml
     kml_path = [settings.PROC.output_dir, '/trajectory.kml'];
     valid = ~any(isnan(posTemp) | isinf(posTemp),2);     % check which epochs are valid
+    if sum(valid)
     kmlwriteline(kml_path, posTemp(valid,1)/pi*180, posTemp(valid,2)/pi*180, posTemp(valid,3), ...
         'Name', settings.PROC.name, 'Description', settings.PROC.output_dir, 'Color', 'b', 'Alpha', 1, 'LineWidth', 8)
+    end
 end
 
 

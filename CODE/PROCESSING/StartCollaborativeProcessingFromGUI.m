@@ -52,7 +52,7 @@ if bool_BATCH_PROC          % batch processing
     sprintf('Collecting data for %d ...\n', n);
     t0 = tic;
     mainAgentData = cell(n,1);
-    parfor i=1:n
+    for i=1:n
         ROW_AGENT = TABLE(i,:);
         settings_agent = BatchProcessingPreparation(settings, ROW_AGENT);
         
@@ -100,11 +100,14 @@ if bool_BATCH_PROC          % batch processing
         end
         
         % ----- COMPUTE SOLUTION FOR AN AGENT --------
+        t0=tic;
         for i=1:n
-            agentData = mainAgentData;
-            [agentData] = ProcessAgentEpoch(agentData, q);
+            agentData = collabData{i};
+            collabData{i} = ProcessAgentEpoch(agentData, q);
         end
+        toc(t0)
         
+        mainAgentData = collabData{2};
         % update waitbar
         if mainAgentData.bool_print && mod(q,mainAgentData.q_update) == 0 && ishandle(mainAgentData.WBAR)
             progress = q/mainAgentData.q_range(end);
@@ -127,14 +130,15 @@ if bool_BATCH_PROC          % batch processing
             end
         end
     end             % end of loop over epochs / epoch-wise calculations
-    
-    
+
     %% -+-+-+-+-+-VISUALS AND OUTPUT-+-+-+-+-+-
     
     mess = sprintf('Processing finished, opening plots...');
     if mainAgentData.bool_print
         % update waitbar
-        if ishandle(mainAgentData.WBAR);  waitbar(1,mainAgentData.WBAR, mess);  end
+        if ishandle(mainAgentData.WBAR) 
+            waitbar(1,mainAgentData.WBAR, mess);  
+        end
     end
     
     % save epochs of reset
@@ -180,16 +184,17 @@ if bool_BATCH_PROC          % batch processing
     end
     
     % push to workspace
-    assignin('base',     'obs',         mainAgentData.obs        )
-    assignin('base',     'settings',    mainAgentData.settings   )
+    assignin('base',     'obs',         mainAgentData.obs        );
+    assignin('base',     'settings',    mainAgentData.settings   );
     if mainAgentData.settings.EXP.satellites
-        assignin('base', 'satellites',  mainAgentData.satellites )
+        assignin('base', 'satellites',  mainAgentData.satellites );
     end
     if mainAgentData.settings.EXP.storeData
-        assignin('base', 'storeData',   mainAgentData.storeData  )
+        assignin('base', 'storeData',   mainAgentData.storeData  );
+        assignin('base', 'collabData',  collabData);
     end
     if settings.EXP.model_save
-        assignin('base', 'model_save',  mainAgentData.model_save )
+        assignin('base', 'model_save',  mainAgentData.model_save );
     end
     
     % close waitbar

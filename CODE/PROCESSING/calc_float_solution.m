@@ -179,17 +179,17 @@ while it < 15                           % Start iteration (because of linearizat
             [dx] = KalmanFilterIterativeStandard(Adjust, x_pred);
             % dx = KalmanFilterIterative(Adjust, x_pred);
             % Adjust.P_k_minus    = dx.P_k1_minus; 
-            Adjust.dx_k_minus   = Adjust.dx_k_minus - dx.dx_k1_minus;
+            Adjust.dx_k_minus   = Adjust.dx_k_minus - dx.dx_k_plus;
             % Adjust.res_var = dx.Qvv; 
             
             % x_pred = x_pred - dx.dx_k1_minus;
-            x_pred = x_pred - dx.x;
+            x_pred = x_pred - dx.dx_k_plus;
             if norm(dx.x(1:3)) < it_thresh      % Norm of change in coordinates smaller than e-4 m
                 Adjust = stop_iteration(Adjust, dx);
                 break;
             else        % inner-epoch iteration continues
                 % Adjust.param = Adjust.param + dx.x;
-                Adjust.param = Adjust.param + dx.dx_k1_minus;
+                Adjust.param = Adjust.param + dx.dx_k_plus;
             end
             
         case 'No Filter'      			% perform single-epoch Standard-LSQ-Adjustment
@@ -278,6 +278,19 @@ end     % ... of calc_float_solution.m
 
 %% AUXILIARY FUNCTIONS
 function Adjust = stop_iteration(Adjust, dx)
+    Phi_k           = Adjust.Transition;
+    Qd_k            = Adjust.Noise * 3600;   % 3600s = 1h, since the noise is given in **/sqrt(h) units 
+    
+    % Time propagatiKkon 
+    dx_k1_minus = Phi_k*dx.dx_k_plus;
+    P_k1_minus  = Phi_k*dx.P_k_plus*Phi_k' + Qd_k;
+
+    Adjust.dx_k_minus   = dx_k1_minus;
+    Adjust.P_k_minus    = P_k1_minus;
+
+    dx.dx_k1_minus   = dx_k1_minus;
+    dx.P_k1_minus    = P_k1_minus; 
+
     Adjust.float = true;            % valid float solution
     % Adjust.param = Adjust.param + dx.x;   	% save estimated parameters
     Adjust.param = Adjust.param + dx.dx_k1_minus;

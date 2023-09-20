@@ -40,6 +40,7 @@ hold on
 grid minor;
 grid on;
 xlabel(x_text);
+
 ylabel('Tropo delay (m)');
 
 plot(elapsed_time_sec, tropo_corr, clr{3});

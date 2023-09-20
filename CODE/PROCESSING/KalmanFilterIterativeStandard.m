@@ -35,10 +35,7 @@ P_x = Adjust.P_pred;	% weight matrix of (co)variance-matrix of predicted paramet
 dx_k_minus      = Adjust.dx_k_minus;
 P_k_minus       = Adjust.P_k_minus; 
 % H_k             = Adjust.A;
-R_k             = Adjust.Q; 
-Phi_k           = Adjust.Transition;
-Qd_k            = Adjust.Noise * 3600;   % 3600s = 1h, since the noise is given in **/sqrt(h) units 
-% Qd_k            = zeros(size(Adjust.Noise));
+R_k             = Adjust.Q;
 
 %% Check for NaNs
 % in observed-minus-computed, indication for missing observations
@@ -52,20 +49,11 @@ A(idx_nan, :) = 0;
 % Off-line calculations
 H_k = A;
 K_k         = (P_k_minus*H_k') / (R_k + H_k*P_k_minus*H_k');  % using / instead of inv
-P_k_plus    = (eye(size(P_k_minus)) - K_k*H_k) * P_k_minus;
-P_k1_minus  = Phi_k*P_k_plus*Phi_k' + Qd_k;
-P_k1_minus  = 1/2 * (P_k1_minus + P_k1_minus');  % to preserve symmetry
+P_k_plus    = (eye(size(P_k_minus)) - K_k*H_k) * P_k_minus * (eye(size(P_k_minus)) - K_k*H_k)' + K_k * R_k * K_k';
 
 % Measurement update 
 z_k = omc; 
-dx_k_plus   = dx_k_minus + K_k*(z_k - (H_k*dx_k_minus)); 
-
-% Time propagatiKkon 
-dx_k1_minus = Phi_k*dx_k_plus; 
-
-dx.P_k1_minus    = P_k1_minus; 
-dx.dx_k1_minus   = dx_k1_minus;
-
+dx_k_plus   = dx_k_minus + K_k*(z_k - (H_k*dx_k_minus));
 
 %DEBUG
 % remove the columns of those parameters which do not contribute to the 
@@ -81,8 +69,11 @@ x_pred(zero_columns) = [];
 %% save results
 idx = ~zero_columns;    	% removed columns have to be considered
 
-dx.x = dx_k1_minus;
-% Residuals/Verbesserungen
+% dx.x = dx_k1_minus;
+dx.dx_k_plus    = dx_k_plus;
+dx.x            = dx_k_plus;
+dx.P_k_plus     = P_k_plus;
+% Residuals
 dx.v         = z_k - (H_k*dx_k_plus);          	  
 
 % Covariance matrix of parameters

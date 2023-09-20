@@ -9,7 +9,7 @@ function P_diag = createWeights(Epoch, elev, settings)
 % 
 % INPUT:
 %   Epoch           containing epoch-specific data
-%   elev            elevation of the satellites of current epoch [°]
+%   elev            elevation of the satellites of current epoch [ï¿½]
 %   settings        setting of proceesing from GUI
 % OUTPUT:
 %   P_diag          [n sats x input freqs], weight for each satellite and frequency
@@ -43,7 +43,7 @@ if settings.ADJ.weight_mplc
     % --- Weighting according to elevation
 elseif settings.ADJ.weight_elev
     % observations on different frequencies get same weight factor
-    P_diag(:,:) = settings.ADJ.elev_weight_fun(elev_n*180/pi);       
+    P_diag(:,:) = settings.ADJ.elev_weight_fun(elev_n);       
     
     
     % --- No weighting of the observations
